@@ -131,7 +131,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             catch (Exception ex)
             {
 #if RELEASE
-                return req.CreateResponse(HttpStatusCode.InternalServerError);
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
 #endif
 #if DEBUG
                 return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
