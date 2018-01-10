@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartShowerFunctions", "SmartShowerFunctions\SmartShowerFunctions.csproj", "{92864A97-6D87-45C9-BAA5-0D3F7EE03518}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92864A97-6D87-45C9-BAA5-0D3F7EE03518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92864A97-6D87-45C9-BAA5-0D3F7EE03518}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92864A97-6D87-45C9-BAA5-0D3F7EE03518}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92864A97-6D87-45C9-BAA5-0D3F7EE03518}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B14BDD3E-5219-460F-A9AE-E0A0BC663B4E}
+	EndGlobalSection
+EndGlobal
