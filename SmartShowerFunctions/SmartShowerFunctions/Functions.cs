@@ -131,7 +131,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             catch (Exception ex)
             {
 #if RELEASE
-                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
 #endif
 #if DEBUG
                 return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
@@ -203,11 +203,11 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         bool loginSuccesFull = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (loginSuccesFull)
                         {
-                            return req.CreateResponse(HttpStatusCode.OK, "Login Succes!");
+                            return req.CreateResponse(HttpStatusCode.OK, User.IdUser);
                         }
                         else
                         {
-                            return req.CreateResponse(HttpStatusCode.Unauthorized, "Login Failed!");
+                            return req.CreateResponse(HttpStatusCode.Unauthorized, false);
                         }
                     }  
                 }   
@@ -225,13 +225,56 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
 
     }
-        //[FunctionName("GetUserInfo")]
-        //public static async Task<HttpResponseMessage> GetUserInfo([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/User/Info")]HttpRequestMessage req, TraceWriter log)
-        //{
-        //    var content = await req.Content.ReadAsStringAsync();
-        //    var User = JsonConvert.DeserializeObject<User>(content);
+        [FunctionName("GetUserInfo")]
+        public static async Task<HttpResponseMessage> GetUserInfo([HttpTrigger(AuthorizationLevel.Anonymous, "get","post", Route = "SmartShower/User/Info/{IdUser}")]HttpRequestMessage req, Guid IdUser, TraceWriter log)
+        {
+            try
+            {
+                List<User> userInfo = new List<User>();
+                var content = await req.Content.ReadAsStringAsync();
+                var User = JsonConvert.DeserializeObject<User>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "SELECT Name, Email, Color, MaxShowerTime, IdealTemperature, Monitor, Photo FROM Users WHERE Email Like @IdUser;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@IdUser", IdUser);
+                        //command.ExecuteNonQuery();
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            userInfo.Add(new User
+                            {
+                                Name = reader["Name"].ToString(),
+                                Email = reader["Email"].ToString(),
+                                Color = reader["Color"].ToString(),
+                                MaxShowerTime = Convert.ToInt32(reader["MaxShowerTime"]),
+                                IdealTemperature = Convert.ToUInt32(reader["IdealTemperature"]),
+                                Monitor = Convert.ToBoolean(reader["Monitor"]),
+                                Photo = reader["Photo"].ToString()
+                            });
+                        }
+                    }
+                    return req.CreateResponse(HttpStatusCode.OK, userInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
 
-        //}
+
+
+
+        }
 
 
 
