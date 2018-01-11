@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -200,6 +201,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
                         //connection.Close();
+                        Debug.WriteLine(ds.Tables[0].Rows[0]["IdUser"]);
+
                         bool loginSuccesFull = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (loginSuccesFull)
                         {
@@ -356,6 +359,16 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
 
         }
+
+        //[FunctionName("MakeGroup")]
+        //public static async Task<HttpResponseMessage> MakeGroup([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/new/")]HttpRequestMessage req, TraceWriter log)
+        //{
+        //    try
+        //    {
+
+        //    }
+        //}
+
 
 
 
