@@ -201,12 +201,12 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
                         //connection.Close();
-                        Debug.WriteLine(ds.Tables[0].Rows[0]["IdUser"]);
+                        
 
                         bool loginSuccesFull = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (loginSuccesFull)
                         {
-                            return req.CreateResponse(HttpStatusCode.OK, User.IdUser);
+                            return req.CreateResponse(HttpStatusCode.OK, ds.Tables[0].Rows[0]["IdUser"]);
                         }
                         else
                         {
@@ -365,6 +365,15 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         //{
         //    try
         //    {
+        //        Guid idShower = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
+        //        var content = await req.Content.ReadAsStringAsync();
+        //        var group = JsonConvert.DeserializeObject<UserGroup>(content);
+        //        using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+        //        {
+
+        //        }
+
+
 
         //    }
         //}
