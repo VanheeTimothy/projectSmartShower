@@ -70,7 +70,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                                 
                        
                     }
-                    return req.CreateResponse(HttpStatusCode.OK, user);
+                    return req.CreateResponse(HttpStatusCode.OK, true);
                 }
 
             }
@@ -207,7 +207,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         }
                         else
                         {
-                            return req.CreateResponse(HttpStatusCode.Unauthorized, false);
+                            return req.CreateResponse(HttpStatusCode.Unauthorized, 0);
                         }
                     }  
                 }   
@@ -226,11 +226,11 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
     }
         [FunctionName("GetUserInfo")]
-        public static async Task<HttpResponseMessage> GetUserInfo([HttpTrigger(AuthorizationLevel.Anonymous, "get","post", Route = "SmartShower/User/Info/{IdUser}")]HttpRequestMessage req, Guid IdUser, TraceWriter log)
+        public static async Task<HttpResponseMessage> GetUserInfo([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/User/Info/")]HttpRequestMessage req,  TraceWriter log)
         {
             try
             {
-                List<User> userInfo = new List<User>();
+                User userInfo = new User();
                 var content = await req.Content.ReadAsStringAsync();
                 var User = JsonConvert.DeserializeObject<User>(content);
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
@@ -239,23 +239,23 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        string sql = "SELECT Name, Email, Color, MaxShowerTime, IdealTemperature, Monitor, Photo FROM Users WHERE Email Like @IdUser;";
+                        string sql = "SELECT Name, Email, Color, MaxShowerTime, IdealTemperature, Monitor, Photo FROM Users WHERE IdUser Like @IdUser;";
                         command.CommandText = sql;
-                        command.Parameters.AddWithValue("@IdUser", IdUser);
+                        command.Parameters.AddWithValue("@IdUser", User.IdUser);
                         //command.ExecuteNonQuery();
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
                         {
-                            userInfo.Add(new User
-                            {
-                                Name = reader["Name"].ToString(),
-                                Email = reader["Email"].ToString(),
-                                Color = reader["Color"].ToString(),
-                                MaxShowerTime = Convert.ToInt32(reader["MaxShowerTime"]),
-                                IdealTemperature = Convert.ToUInt32(reader["IdealTemperature"]),
-                                Monitor = Convert.ToBoolean(reader["Monitor"]),
-                                Photo = reader["Photo"].ToString()
-                            });
+
+                            //IdUser = Guid.TryParse(reader["IdUser"], ),
+                            userInfo.Name = reader["Name"].ToString();
+                            userInfo.Email = reader["Email"].ToString();
+                            userInfo.Color = reader["Color"].ToString();
+                            userInfo.MaxShowerTime = Convert.ToInt32(reader["MaxShowerTime"]);
+                            userInfo.IdealTemperature = Convert.ToUInt32(reader["IdealTemperature"]);
+                            userInfo.Monitor = Convert.ToBoolean(reader["Monitor"]);
+                            userInfo.Photo = reader["Photo"].ToString();
+                           
                         }
                     }
                     return req.CreateResponse(HttpStatusCode.OK, userInfo);
@@ -275,6 +275,89 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
 
         }
+
+        [FunctionName("UpdateUser")]
+        public static async Task<HttpResponseMessage> UpdateUser([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "SmartShower/User/Update/")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var User = JsonConvert.DeserializeObject<User>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+
+                        string sql = "UPDATE Users SET Name = @Name, Password = @Password, Email = @Email, Color = @Color, MaxShowerTime = @MaxShowerTime, IdealTemperature = @IdealTemperature, Monitor = @Monitor, Photo = @Photo WHERE IdUser = @IdUser;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@Name", User.Name);
+                        command.Parameters.AddWithValue("@Password", User.Password);
+                        command.Parameters.AddWithValue("@Email", User.Email);
+                        command.Parameters.AddWithValue("@Color", User.Color);
+                        command.Parameters.AddWithValue("@MaxShowerTime", User.MaxShowerTime);
+                        command.Parameters.AddWithValue("@IdealTemperature", User.IdealTemperature);
+                        command.Parameters.AddWithValue("@Monitor", User.Monitor);
+                        command.Parameters.AddWithValue("@Photo", User.Photo);
+                        command.Parameters.AddWithValue("@IdUser", User.IdUser);
+                        command.ExecuteNonQuery();
+
+
+                    }
+
+                }
+                return req.CreateResponse(HttpStatusCode.OK, "De gegevens zijn geupdate");
+
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+
+        }
+
+        [FunctionName("UpdateShower")]
+        public static async Task<HttpResponseMessage> UpdateShower([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "SmartShower/Shower/Update/")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var shower = JsonConvert.DeserializeObject<Shower>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "UPDATE Shower SET WaterCost = @Watercost WHERE IdShower = @showerId;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@WaterCost", Math.Round(shower.WaterCost, 2));
+                        command.Parameters.AddWithValue("@showerId", shower.IdShower);
+                        command.ExecuteNonQuery();
+                    }
+                }
+                return req.CreateResponse(HttpStatusCode.OK, "De showergegevens zijn geupdate");
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+
+
+        }
+
+
 
 
 
