@@ -310,7 +310,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     }
 
                 }
-                return req.CreateResponse(HttpStatusCode.OK, "De gegevens zijn geupdate");
+                return req.CreateResponse(HttpStatusCode.OK, true);
 
             }
             catch (Exception ex)
@@ -345,7 +345,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.ExecuteNonQuery();
                     }
                 }
-                return req.CreateResponse(HttpStatusCode.OK, "De showergegevens zijn geupdate");
+                return req.CreateResponse(HttpStatusCode.OK, true);
             }
             catch (Exception ex)
             {
@@ -383,7 +383,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     }
                     
                 }
-                return req.CreateResponse(HttpStatusCode.OK, "de groep is aangemaakt");
+                return req.CreateResponse(HttpStatusCode.OK, true);
 
             }
             catch (Exception ex)
@@ -416,7 +416,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.ExecuteNonQuery();
                     }
                 }
-                return req.CreateResponse(HttpStatusCode.OK, "de groep is verwijderd");
+                return req.CreateResponse(HttpStatusCode.OK, true);
             }
             catch (Exception ex)
             {
@@ -448,7 +448,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.ExecuteNonQuery();
                     }
                 }
-                return req.CreateResponse(HttpStatusCode.OK, "de gebruiker is uit de groep verwijderd");
+                return req.CreateResponse(HttpStatusCode.OK, true);
             }
             catch (Exception ex)
             {
@@ -490,7 +490,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                                 IdUser = new Guid(ds.Tables[0].Rows[0]["IdUser"].ToString()),
                                 Name = ds.Tables[0].Rows[0]["Name"].ToString(),
                                 Color = ds.Tables[0].Rows[0]["Color"].ToString(),
-                                Photo = ds.Tables[0].Rows[0]["Photo"].ToString()
+                                Photo = ds.Tables[0].Rows[0]["Photo"].ToString(),
+                                Email = ds.Tables[0].Rows[0]["Email"].ToString()
 
                             };
                             string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, 1);"; // invite verzonden, pending op true
@@ -503,7 +504,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         }
                         else
                         {
-                            return req.CreateResponse(HttpStatusCode.NotFound, "Email adres niet gevonden");
+                            return req.CreateResponse(HttpStatusCode.NotFound, true);
 
                         }
 
