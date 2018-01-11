@@ -360,27 +360,168 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
         }
 
-        //[FunctionName("MakeGroup")]
-        //public static async Task<HttpResponseMessage> MakeGroup([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/new/")]HttpRequestMessage req, TraceWriter log)
-        //{
-        //    try
-        //    {
-        //        Guid idShower = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
-        //        var content = await req.Content.ReadAsStringAsync();
-        //        var group = JsonConvert.DeserializeObject<UserGroup>(content);
-        //        using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
-        //        {
+        [FunctionName("MakeGroup")]
+        public static async Task<HttpResponseMessage> MakeGroup([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/new/")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                //Guid idGroup = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, @pending);";
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                        command.Parameters.AddWithValue("@pending", group.Pendidng);
+                        command.CommandText = sql;
+                        command.ExecuteNonQuery();
+                    }
+                    
+                }
+                return req.CreateResponse(HttpStatusCode.OK, "de groep is aangemaakt");
 
-        //        }
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
 
+        [FunctionName("DeleteGroup")]
+        public static async Task<HttpResponseMessage> DeleteGroup([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "SmartShower/Group/delete/")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "DELETE FROM UserGroup WHERE IdGroup = @IdGroup;";
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);                  
+                        command.CommandText = sql;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                return req.CreateResponse(HttpStatusCode.OK, "de groep is verwijderd");
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+        [FunctionName("DeleteUserFromGroup")]
+        public static async Task<HttpResponseMessage> DeleteUserFromGroup([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "SmartShower/Group/user/delete")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "DELETE FROM UserGroup WHERE IdGroup = @IdGroup AND IdUser = @IdUser ;";
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                        command.CommandText = sql;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                return req.CreateResponse(HttpStatusCode.OK, "de gebruiker is uit de groep verwijderd");
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
 
+        }
+        [FunctionName("SendGroupInvite")]
+        public static async Task<HttpResponseMessage> SendGroupInvite([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/invite")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var user = JsonConvert.DeserializeObject<User>(content);
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string dataUser = "SELECT IdUser, Name, Color, Photo FROM Users WHERE Email = @Email;";
+                        command.Parameters.AddWithValue("@Email", user.Email);
+                        command.CommandText = dataUser;
 
-        //    }
-        //}
+                        DataSet ds = new DataSet();
+                        SqlDataAdapter da = new SqlDataAdapter(command);
+                        da.Fill(ds);
+                        bool userDataFound = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
+                        if (userDataFound)
+                        {
+                            User p = new User()
+                            {
+                                IdUser = new Guid(ds.Tables[0].Rows[0]["IdUser"].ToString()),
+                                Name = ds.Tables[0].Rows[0]["Name"].ToString(),
+                                Color = ds.Tables[0].Rows[0]["Color"].ToString(),
+                                Photo = ds.Tables[0].Rows[0]["Photo"].ToString()
 
+                            };
+                            string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, 1);"; // invite verzonden, pending op true
+                            command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                            command.Parameters.AddWithValue("@IdUser", p.IdUser);
+                            command.CommandText = sql;
+                            command.ExecuteNonQuery();
+                            return req.CreateResponse(HttpStatusCode.OK, p);
 
+                        }
+                        else
+                        {
+                            return req.CreateResponse(HttpStatusCode.NotFound, "Email adres niet gevonden");
 
+                        }
 
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+
+        }
 
 
 

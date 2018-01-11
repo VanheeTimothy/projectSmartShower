@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,15 @@ using System.Threading.Tasks;
 
 namespace SmartShowerFunctions.Model
 {
-    class Group
+    public class UserGroup
     {
+        [JsonProperty("idgroup")]
+        public Guid IdGroup { get; set; }
+        [JsonProperty("iduser")]
+        public Guid IdUser { get; set; }
+        [JsonProperty("pending")]
+        public bool Pendidng { get; set; }
+
+
     }
 }
