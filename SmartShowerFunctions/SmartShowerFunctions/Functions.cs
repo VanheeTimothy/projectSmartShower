@@ -35,7 +35,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
                 {
                     connection.Open();
-                    using(SqlCommand command = new SqlCommand())
+                    using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
                         string EmailCheckSql = "select Email FROM Users Where Email = @mail";
@@ -68,8 +68,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             command.Parameters.AddWithValue("@Photo", user.Photo);
                             command.ExecuteNonQuery();
                         }
-                                
-                       
+
+
                     }
                     return req.CreateResponse(HttpStatusCode.OK, true);
                 }
@@ -111,7 +111,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         bool showerAlreadyReg = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (showerAlreadyReg)
                         {
-                            return req.CreateResponse(HttpStatusCode.Forbidden, "De douche is al geregistreerd");
+                            return req.CreateResponse(HttpStatusCode.Forbidden);
                         }
                         else
                         {
@@ -125,7 +125,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
                     }
                 }
-                return req.CreateResponse(HttpStatusCode.OK, shower);
+                return req.CreateResponse(HttpStatusCode.OK);
 
 
             }
@@ -180,16 +180,16 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         {
             try
             {
-                
+
                 var content = await req.Content.ReadAsStringAsync();
                 var User = JsonConvert.DeserializeObject<User>(content);
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
                 {
                     connection.Open();
-                    using(SqlCommand command = new SqlCommand())
+                    using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        
+
                         string sql = "SELECT * FROM Users where Email like @Email and Password = @password;";
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
@@ -201,7 +201,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
                         //connection.Close();
-                        
+
 
                         bool loginSuccesFull = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (loginSuccesFull)
@@ -212,8 +212,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         {
                             return req.CreateResponse(HttpStatusCode.Unauthorized, 0);
                         }
-                    }  
-                }   
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -227,9 +227,9 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
 
 
-    }
+        }
         [FunctionName("GetUserInfo")]
-        public static async Task<HttpResponseMessage> GetUserInfo([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/User/Info/")]HttpRequestMessage req,  TraceWriter log)
+        public static async Task<HttpResponseMessage> GetUserInfo([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/User/Info/")]HttpRequestMessage req, TraceWriter log)
         {
             try
             {
@@ -258,7 +258,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             userInfo.IdealTemperature = Convert.ToUInt32(reader["IdealTemperature"]);
                             userInfo.Monitor = Convert.ToBoolean(reader["Monitor"]);
                             userInfo.Photo = reader["Photo"].ToString();
-                           
+
                         }
                     }
                     return req.CreateResponse(HttpStatusCode.OK, userInfo);
@@ -374,14 +374,13 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, @pending);";
+                        string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, 0);";
                         command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
                         command.Parameters.AddWithValue("@IdUser", group.IdUser);
-                        command.Parameters.AddWithValue("@pending", group.Pendidng);
                         command.CommandText = sql;
                         command.ExecuteNonQuery();
                     }
-                    
+
                 }
                 return req.CreateResponse(HttpStatusCode.OK, true);
 
@@ -411,7 +410,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
                         string sql = "DELETE FROM UserGroup WHERE IdGroup = @IdGroup;";
-                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);                  
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
                         command.CommandText = sql;
                         command.ExecuteNonQuery();
                     }
@@ -491,7 +490,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                                 Name = ds.Tables[0].Rows[0]["Name"].ToString(),
                                 Color = ds.Tables[0].Rows[0]["Color"].ToString(),
                                 Photo = ds.Tables[0].Rows[0]["Photo"].ToString(),
-                                Email = ds.Tables[0].Rows[0]["Email"].ToString()
 
                             };
                             string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, 1);"; // invite verzonden, pending op true
@@ -523,6 +521,142 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
 
         }
+
+        [FunctionName("AcceptInvite")]
+        public static async Task<HttpResponseMessage> AcceptInvite([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "SmartShower/Group/invite/accept")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "UPDATE UserGroup SET Pending = 0 WHERE IdGroup = @IdGroup AND IdUser = @IdUser;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                        command.ExecuteNonQuery();
+                    }
+                    
+                }
+                return req.CreateResponse(HttpStatusCode.OK, true);
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
+        [FunctionName("GetSessions")]
+        public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                List<Session> sessions = new List<Session>();
+                var content = await req.Content.ReadAsStringAsync();
+                var session = JsonConvert.DeserializeObject<Session>(content);
+
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+
+                        switch (session.DataLenght)
+                        {
+                            case 0:
+                                sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+                                break;
+                            case 1:
+                                sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND Timestamp  >= DATEADD(day,-7, GETDATE())";
+                                break;
+                            case 2:
+                                sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND timestamp >= DATEADD(day,-30, getdate())  and timestamp <= getdate()";
+                                break;
+                        }
+                        command.Parameters.AddWithValue("@IdUser", session.IdUser);
+                        command.CommandText = sql;
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            sessions.Add(new Session
+                            {
+                                IdSession = new Guid(reader["IdSession"].ToString()),
+                                IdUser = new Guid(reader["IdUser"].ToString()),
+                                WaterUsed = float.Parse(reader["WaterUsed"].ToString()),
+                                MoneySaved = float.Parse(reader["MoneySaved"].ToString()),
+                                EcoScore = float.Parse(reader["EcoScore"].ToString()),
+                                AverageTemp = float.Parse(reader["AverageTemp"].ToString()),
+                                Duration = Convert.ToInt32(reader["Duration"].ToString()),
+                                Timestamp = Convert.ToDateTime(reader["Timestamp"])
+
+                            });
+                        }
+                    }
+                    return req.CreateResponse(HttpStatusCode.OK, sessions);
+                }
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
+
+
+
+
+        //        [FunctionName("DeclineInvite")] // decline >> zelfde effect of delete 
+        //        public static async Task<HttpResponseMessage> DeclineInvite([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "SmartShower/Group/invite/delete")]HttpRequestMessage req, TraceWriter log)
+        //        {
+        //            try
+        //            {
+        //                var content = await req.Content.ReadAsStringAsync();
+        //                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+        //                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+        //                {
+        //                    connection.Open();
+        //                    using (SqlCommand command = new SqlCommand())
+        //                    {
+        //                        command.Connection = connection;
+        //                        string sql = "DELETE UserGroup WHERE IdGroup = @IdGroup AND IdUser = @IdUser;";
+        //                        command.CommandText = sql;
+        //                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+        //                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+        //                        command.ExecuteNonQuery();
+        //                    }
+
+        //                }
+        //                return req.CreateResponse(HttpStatusCode.OK, true);
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //#if RELEASE
+        //                return req.CreateResponse(HttpStatusCode.InternalServerError);
+        //#endif
+        //#if DEBUG
+        //                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+        //#endif
+        //            }
+        //        }
+
+
 
 
 

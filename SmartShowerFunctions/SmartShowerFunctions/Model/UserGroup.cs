@@ -14,7 +14,7 @@ namespace SmartShowerFunctions.Model
         [JsonProperty("iduser")]
         public Guid IdUser { get; set; }
         [JsonProperty("pending")]
-        public bool Pendidng { get; set; }
+        public bool Pending { get; set; }
 
 
     }
