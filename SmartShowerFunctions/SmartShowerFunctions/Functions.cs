@@ -18,7 +18,10 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 {
     public static class Functions
     {
-
+        private static string COSMOSHOST = Environment.GetEnvironmentVariable("COSMOSHOST");
+        private static string COSMOSKEY = Environment.GetEnvironmentVariable("COSMOSKEY");
+        private static string COSMOSDATABASE = Environment.GetEnvironmentVariable("COSMOSDATABASE");
+        private static string COSMOSCOLLECTIONID = Environment.GetEnvironmentVariable("COSMOSCOLLECTIONID");
         private static string CONNECTIONSTRING = Environment.GetEnvironmentVariable("Connectionstring");
 
 
@@ -617,6 +620,16 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #endif
             }
         }
+
+        [FunctionName("GetSessions")]
+        public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
+        {
+
+
+        }
+
+
+
 
 
 
