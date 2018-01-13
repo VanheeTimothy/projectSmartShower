@@ -51,7 +51,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         bool userAlreadyExists = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (userAlreadyExists)
                         {
-                            return req.CreateResponse(HttpStatusCode.Forbidden, "gebruiker bestaat al");
+                            return req.CreateResponse(HttpStatusCode.Forbidden, true);
                         }
                         else
                         {
@@ -621,12 +621,12 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
-        [FunctionName("GetSessions")]
-        public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
-        {
+        //[FunctionName("GetSessions")]
+        //public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
+        //{
 
 
-        }
+        //}
 
 
 
