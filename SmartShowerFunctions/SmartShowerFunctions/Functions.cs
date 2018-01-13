@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -621,12 +622,65 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
-        //[FunctionName("GetSessions")]
-        //public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
-        //{
+        [FunctionName("AddSessionToCosmosDb")]
+        public static async Task<HttpResponseMessage> AddSessionToCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/AddSession")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                // content van de body inlezen
+                var content = await req.Content.ReadAsStringAsync();
+                SessionCosmosDb sessionData = JsonConvert.DeserializeObject<SessionCosmosDb>(content);
+                sessionData.Timestamp = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "w. Europe Standard Time");
+                var client = new DocumentClient(new Uri(COSMOSHOST), COSMOSKEY);
+                var docUrl = UriFactory.CreateDocumentCollectionUri(COSMOSDATABASE, COSMOSCOLLECTIONID);
+                await client.CreateDocumentAsync(docUrl, sessionData);
+                return req.CreateResponse(HttpStatusCode.OK, sessionData);
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
 
 
-        //}
+        }
+
+        [FunctionName("GetSessionFromCosmosDb")]
+        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{id}")]HttpRequestMessage req, string id, TraceWriter log)
+        {
+            try
+            {
+
+    //            IQueryable<DeviceReading> crossPartitionQuery = client.CreateDocumentQuery<DeviceReading>(
+    //UriFactory.CreateDocumentCollectionUri("db", "coll"),
+    //new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 })
+    //.Where(m => m.MetricType == "Temperature" && m.MetricValue > 100)
+    //.OrderBy(m => m.MetricValue);
+
+                var client = new DocumentClient(new Uri(COSMOSHOST), COSMOSKEY);
+                // volgende stap uri prepareren
+                var docUrl = UriFactory.CreateDocumentCollectionUri(COSMOSDATABASE, COSMOSCOLLECTIONID);
+                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => (p.IdSession == id));
+                
+                return req.CreateResponse(HttpStatusCode.OK, logs.ToList<SessionCosmosDb>());
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                log.Info(ex.ToString());
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+
+#endif
+            }
+        }
+
 
 
 
@@ -644,7 +698,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         //                var group = JsonConvert.DeserializeObject<UserGroup>(content);
         //                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
         //                {
-        //                    connection.Open();
+        //                     connection.Open();
         //                    using (SqlCommand command = new SqlCommand())
         //                    {
         //                        command.Connection = connection;
