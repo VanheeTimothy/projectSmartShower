@@ -746,46 +746,5 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
 
 
-
-        //        [FunctionName("DeclineInvite")] // decline >> zelfde effect of delete 
-        //        public static async Task<HttpResponseMessage> DeclineInvite([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "SmartShower/Group/invite/delete")]HttpRequestMessage req, TraceWriter log)
-        //        {
-        //            try
-        //            {
-        //                var content = await req.Content.ReadAsStringAsync();
-        //                var group = JsonConvert.DeserializeObject<UserGroup>(content);
-        //                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
-        //                {
-        //                     connection.Open();
-        //                    using (SqlCommand command = new SqlCommand())
-        //                    {
-        //                        command.Connection = connection;
-        //                        string sql = "DELETE UserGroup WHERE IdGroup = @IdGroup AND IdUser = @IdUser;";
-        //                        command.CommandText = sql;
-        //                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
-        //                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
-        //                        command.ExecuteNonQuery();
-        //                    }
-
-        //                }
-        //                return req.CreateResponse(HttpStatusCode.OK, true);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //#if RELEASE
-        //                return req.CreateResponse(HttpStatusCode.InternalServerError);
-        //#endif
-        //#if DEBUG
-        //                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
-        //#endif
-        //            }
-        //        }
-
-
-
-
-
-
-
     }
 }
