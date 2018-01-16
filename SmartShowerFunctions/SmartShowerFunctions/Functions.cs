@@ -668,14 +668,14 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         }
 
         [FunctionName("GetSessionFromCosmosDb")]
-        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{idShower}/{profileInt}")]HttpRequestMessage req, Guid idShower, int profileInt, TraceWriter log)
+        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{idShower}/{profileInt}")]HttpRequestMessage req, string idShower, int profileInt, TraceWriter log)
         {
             try
             {
                 var client = new DocumentClient(new Uri(COSMOSHOST), COSMOSKEY);
                 // volgende stap uri prepareren
                 var docUrl = UriFactory.CreateDocumentCollectionUri(COSMOSDATABASE, COSMOSCOLLECTIONID);
-                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => p.IdShower == idShower && p.ProfileNumber == profileInt);
+                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => p.IdShower == new Guid(idShower) && p.ProfileNumber == profileInt);
                 
                 return req.CreateResponse(HttpStatusCode.OK, logs.ToList<SessionCosmosDb>());
             }

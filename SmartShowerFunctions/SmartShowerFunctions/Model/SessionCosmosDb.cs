@@ -10,7 +10,7 @@ namespace SmartShowerFunctions.Model
     class SessionCosmosDb
     {
         [JsonProperty("idsession")]
-        public Guid IdSession { get; set; }
+        public string IdSession { get; set; }
         [JsonProperty("idshower")]
         public Guid IdShower { get; set; }
         [JsonProperty("profilenumber")]
