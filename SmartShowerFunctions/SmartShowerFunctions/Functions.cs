@@ -123,7 +123,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             string sql = "INSERT INTO Shower VALUES(@IdShower, @WaterCost)";
                             command.CommandText = sql;
                             command.Parameters.AddWithValue("@IdShower", shower.IdShower);
-                            command.Parameters.AddWithValue("@WaterCost", shower.WaterCost);
+                            command.Parameters.AddWithValue("@WaterCost", 0.005); // vaste gemiddelde prijs per liter
                             command.ExecuteNonQuery();
                         }
 
@@ -157,11 +157,29 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        string sql = "INSERT INTO UserShower VALUES(@IdShower,@IdUser)";
-                        command.CommandText = sql;
-                        command.Parameters.AddWithValue("@IdShower", UserShower.IdShower);
-                        command.Parameters.AddWithValue("@IdUser", UserShower.IdUser);
-                        command.ExecuteNonQuery();
+                        string showerCheck = "SELECT * FROM Shower WHERE IdShower = @ShowerId;";
+                        command.Parameters.AddWithValue("@ShowerId", UserShower.IdShower);
+                        command.CommandText = showerCheck;
+                        DataSet ds = new DataSet();
+                        SqlDataAdapter da = new SqlDataAdapter(command);
+                        da.Fill(ds);
+                        //connection.Close();
+                        bool showerAlreadyReg = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
+                        if (showerAlreadyReg)
+                        {
+                            string sql = "INSERT INTO UserShower VALUES(@IdShower,@IdUser)";
+                            command.CommandText = sql;
+                            command.Parameters.AddWithValue("@IdShower", UserShower.IdShower);
+                            command.Parameters.AddWithValue("@IdUser", UserShower.IdUser);
+                            command.ExecuteNonQuery();
+                        }
+                        else
+                        {
+                            return req.CreateResponse(HttpStatusCode.NotFound);
+
+                        }
+
+
                     }
                 }
                 return req.CreateResponse(HttpStatusCode.OK, UserShower);
@@ -257,7 +275,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             //IdUser = Guid.TryParse(reader["IdUser"], ),
                             userInfo.Name = reader["Name"].ToString();
                             userInfo.Email = reader["Email"].ToString();
-                            userInfo.Color = reader["Color"].ToString();
+                            userInfo.Color = Convert.ToInt32(reader["Color"]);
                             userInfo.MaxShowerTime = Convert.ToInt32(reader["MaxShowerTime"]);
                             userInfo.IdealTemperature = Convert.ToUInt32(reader["IdealTemperature"]);
                             userInfo.Monitor = Convert.ToBoolean(reader["Monitor"]);
@@ -492,7 +510,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             {
                                 IdUser = new Guid(ds.Tables[0].Rows[0]["IdUser"].ToString()),
                                 Name = ds.Tables[0].Rows[0]["Name"].ToString(),
-                                Color = ds.Tables[0].Rows[0]["Color"].ToString(),
+                                Color = Convert.ToInt32(ds.Tables[0].Rows[0]["Color"]),
                                 Photo = ds.Tables[0].Rows[0]["Photo"].ToString(),
 
                             };
@@ -650,21 +668,14 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         }
 
         [FunctionName("GetSessionFromCosmosDb")]
-        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{id}")]HttpRequestMessage req, string id, TraceWriter log)
+        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{idShower}/{profileInt}")]HttpRequestMessage req, Guid idShower, int profileInt, TraceWriter log)
         {
             try
             {
-
-    //            IQueryable<DeviceReading> crossPartitionQuery = client.CreateDocumentQuery<DeviceReading>(
-    //UriFactory.CreateDocumentCollectionUri("db", "coll"),
-    //new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 })
-    //.Where(m => m.MetricType == "Temperature" && m.MetricValue > 100)
-    //.OrderBy(m => m.MetricValue);
-
                 var client = new DocumentClient(new Uri(COSMOSHOST), COSMOSKEY);
                 // volgende stap uri prepareren
                 var docUrl = UriFactory.CreateDocumentCollectionUri(COSMOSDATABASE, COSMOSCOLLECTIONID);
-                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => (p.IdSession == id));
+                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => p.IdShower == idShower && p.ProfileNumber == profileInt);
                 
                 return req.CreateResponse(HttpStatusCode.OK, logs.ToList<SessionCosmosDb>());
             }
@@ -676,10 +687,57 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #if DEBUG
                 log.Info(ex.ToString());
                 return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
-
 #endif
             }
         }
+
+        [FunctionName("GetAvailableColors")]
+        public static async Task<HttpResponseMessage> GetAvailableColors([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/getAvailableColors")]HttpRequestMessage req,  TraceWriter log)
+        {
+            try
+            {
+                List<int> allColors = new List<int>() { 1, 2, 3, 4, 5, 6, 7 };
+                List<int> colors = new List<int>();
+                var content = await req.Content.ReadAsStringAsync();
+                var shower = JsonConvert.DeserializeObject<Shower>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "select color from Users inner join UserShower on Users.IdUser = UserShower.IdUser where UserShower.IdShower = @IdShower;";
+                        command.Parameters.AddWithValue("@IdShower", shower.IdShower);
+                        command.CommandText = sql;
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            colors.Add(Convert.ToInt32(reader["color"]));
+
+                        }
+
+                    }
+                }
+                foreach(int color in colors)
+                {
+                    allColors.Remove(color);
+                }
+                return req.CreateResponse(HttpStatusCode.OK, allColors);
+
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                log.Info(ex.ToString());
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
+
 
 
 

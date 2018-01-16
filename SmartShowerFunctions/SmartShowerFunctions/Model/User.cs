@@ -18,7 +18,7 @@ namespace SmartShowerFunctions.Model
         [JsonProperty("email")]
         public string Email { get; set; }
         [JsonProperty("color")]
-        public string Color { get; set; }
+        public int Color { get; set; }
         [JsonProperty("maxshowertime")]
         public int MaxShowerTime { get; set; }
         [JsonProperty("idealtemperature")]
