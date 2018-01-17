@@ -228,7 +228,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         bool loginSuccesFull = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (loginSuccesFull)
                         {
-                            return req.CreateResponse(HttpStatusCode.OK, ds.Tables[0].Rows[0]);
+                            return req.CreateResponse(HttpStatusCode.OK, ds.Tables[0]);
                         }
                         else
                         {
@@ -524,7 +524,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         }
                         else
                         {
-                            return req.CreateResponse(HttpStatusCode.NotFound, true);
+                            return req.CreateResponse(HttpStatusCode.NotFound, false);
 
                         }
 
@@ -706,23 +706,23 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         // select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;
-                        command.Connection = connection;
-                        string idUser = "select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;";
-                        command.Parameters.AddWithValue("@IdShower", session.Ids)
+                        //command.Connection = connection;
+                        //string idUser = "select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;";
+                        //command.Parameters.AddWithValue("@IdShower", user.Id)
                         
                         
-                        //string sql = "INSERT INTO Session VALUES(@IdSession, @IdUser, @WaterUsed, @MoneySaved, @EcoScore, @AverageTemp, @Duration, @Timestamp);";
-                        //command.Parameters.AddWithValue("@IdSession", session.IdSession);
-                        //command.Parameters.AddWithValue("@IdUser", session.IdUser);
-                        //command.Parameters.AddWithValue("@WaterUsed", session.WaterUsed);
-                        //command.Parameters.AddWithValue("@MoneySaved", session.MoneySaved);
-                        //command.Parameters.AddWithValue("@EcoScore", session.EcoScore);
-                        //command.Parameters.AddWithValue("@AverageTemp", session.AverageTemp);
-                        //command.Parameters.AddWithValue("@Duration", session.Duration);
-                        //command.Parameters.AddWithValue("@Timestamp", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "w. Europe Standard Time"));
+                        ////string sql = "INSERT INTO Session VALUES(@IdSession, @IdUser, @WaterUsed, @MoneySaved, @EcoScore, @AverageTemp, @Duration, @Timestamp);";
+                        ////command.Parameters.AddWithValue("@IdSession", session.IdSession);
+                        ////command.Parameters.AddWithValue("@IdUser", session.IdUser);
+                        ////command.Parameters.AddWithValue("@WaterUsed", session.WaterUsed);
+                        ////command.Parameters.AddWithValue("@MoneySaved", session.MoneySaved);
+                        ////command.Parameters.AddWithValue("@EcoScore", session.EcoScore);
+                        ////command.Parameters.AddWithValue("@AverageTemp", session.AverageTemp);
+                        ////command.Parameters.AddWithValue("@Duration", session.Duration);
+                        ////command.Parameters.AddWithValue("@Timestamp", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "w. Europe Standard Time"));
 
-                        command.CommandText = sql;
-                        command.ExecuteNonQuery();
+                        //command.CommandText = sql;
+                        //command.ExecuteNonQuery();
                     }
 
                 }
@@ -761,9 +761,46 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     waterUsed += se.WaterUsage * 3;
                 }
                 averageTemp = averageTemp / sessionData.Count();
-                return req.CreateResponse(HttpStatusCode.OK, waterUsed);
 
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = @IdShower AND Users.Color = @Color;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@IdShower", sessionData[0].IdShower);
+                        command.Parameters.AddWithValue("@Color", sessionData[0].ProfileNumber);
+                        command.ExecuteNonQuery();
+                        DataSet ds = new DataSet();
+                        SqlDataAdapter da = new SqlDataAdapter(command);
+                        da.Fill(ds);
+     
 
+                        bool idUserFound = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
+                        if (idUserFound)
+                        {
+                            string insertSql = "INSERT INTO Session VALUES(@IdSession, @IdUser, @WaterUsed, @MoneySaved, @EcoScore, @AverageTemp, @Duration, @Timestamp);";
+                            command.CommandText = insertSql;
+                            command.Parameters.AddWithValue("@IdSession", Guid.NewGuid());
+                            command.Parameters.AddWithValue("@IdUser", ds.Tables[0].Rows[0]["IdUser"]);
+                            command.Parameters.AddWithValue("@WaterUsed", waterUsed);
+                            command.Parameters.AddWithValue("@MoneySaved", 2.2);
+                            command.Parameters.AddWithValue("@EcoScore", 9.1);
+                            command.Parameters.AddWithValue("@AverageTemp", averageTemp);
+                            command.Parameters.AddWithValue("@Duration", duration);
+                            command.Parameters.AddWithValue("@Timestamp", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "w. Europe Standard Time"));
+                            command.ExecuteNonQuery();
+                        }
+                        else
+                        {
+                            return req.CreateResponse(HttpStatusCode.NotFound, false);
+                        }                        
+                    }
+                }
+                return req.CreateResponse(HttpStatusCode.OK);
+                
             }
             catch (Exception ex)
             {
