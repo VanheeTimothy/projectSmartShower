@@ -668,14 +668,14 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         }
 
         [FunctionName("GetSessionFromCosmosDb")]
-        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{idShower}/{profileInt}")]HttpRequestMessage req, string idShower, int profileInt, TraceWriter log)
+        public static HttpResponseMessage GetSessionFromCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/getSession/{idSession}")]HttpRequestMessage req, string idSession, TraceWriter log)
         {
             try
             {
                 var client = new DocumentClient(new Uri(COSMOSHOST), COSMOSKEY);
                 // volgende stap uri prepareren
                 var docUrl = UriFactory.CreateDocumentCollectionUri(COSMOSDATABASE, COSMOSCOLLECTIONID);
-                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => p.IdShower == new Guid(idShower) && p.ProfileNumber == profileInt);
+                IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => p.IdSession == new Guid(idSession));
                 
                 return req.CreateResponse(HttpStatusCode.OK, logs.ToList<SessionCosmosDb>());
             }
@@ -690,6 +690,12 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #endif
             }
         }
+
+        //[FunctionName("CalculateSession")]
+        //public static HttpResponseMessage CalculateSession([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/calculateSession/{idSession}")]HttpRequestMessage req, string idSession, TraceWriter log)
+        //{
+        //    string url = 
+        //}
 
         [FunctionName("GetAvailableColors")]
         public static async Task<HttpResponseMessage> GetAvailableColors([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/getAvailableColors")]HttpRequestMessage req,  TraceWriter log)
