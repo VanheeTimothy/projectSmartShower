@@ -23,5 +23,10 @@ namespace SmartShowerFunctions.Model
         public int WaterUsage { get; set; }
         [JsonProperty("timestamp")]
         public DateTime Timestamp { get; set; }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }
