@@ -578,6 +578,54 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
+        [FunctionName("GetAllGroupsFromUser")]
+        public static async Task<HttpResponseMessage> GetAllGroupsFromUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/getAllGroupsFromUser")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                List<UserGroup> GroupInfo = new List<UserGroup>();
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "select IdGroup from UserGroup WHERE IdUser = @IdUser and Pending = 0;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            GroupInfo.Add(new UserGroup()
+                            {
+                                IdGroup = new Guid(reader["IdGroup"].ToString()),
+                                IdUser = group.IdUser
+                            });
+
+
+                        }
+                    }
+
+                }
+                return req.CreateResponse(HttpStatusCode.OK, GroupInfo);
+
+            }
+            catch(Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
+
+
+
         [FunctionName("GetSessions")]
         public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
         {
@@ -691,54 +739,54 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
-        [FunctionName("AddSessionToSql")]
-        public static async Task<HttpResponseMessage> AddSessionToSql([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/session/add/")]HttpRequestMessage req, TraceWriter log)
-        {
-            try
-            {
+//        [FunctionName("AddSessionToSql")]
+//        public static async Task<HttpResponseMessage> AddSessionToSql([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/session/add/")]HttpRequestMessage req, TraceWriter log)
+//        {
+//            try
+//            {
 
-                var content = await req.Content.ReadAsStringAsync();
-                var user = JsonConvert.DeserializeObject<User>(content);
-                var session = JsonConvert.DeserializeObject<Session>(content);
-                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
-                {
-                    connection.Open();
-                    using (SqlCommand command = new SqlCommand())
-                    {
-                        // select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;
-                        //command.Connection = connection;
-                        //string idUser = "select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;";
-                        //command.Parameters.AddWithValue("@IdShower", user.Id)
+//                var content = await req.Content.ReadAsStringAsync();
+//                var user = JsonConvert.DeserializeObject<User>(content);
+//                var session = JsonConvert.DeserializeObject<Session>(content);
+//                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+//                {
+//                    connection.Open();
+//                    using (SqlCommand command = new SqlCommand())
+//                    {
+//                        // select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;
+//                        //command.Connection = connection;
+//                        //string idUser = "select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = 'E7587D5F-9F38-4661-ADF1-14F09F12A25F' AND Users.Color = 2;";
+//                        //command.Parameters.AddWithValue("@IdShower", user.Id)
                         
                         
-                        ////string sql = "INSERT INTO Session VALUES(@IdSession, @IdUser, @WaterUsed, @MoneySaved, @EcoScore, @AverageTemp, @Duration, @Timestamp);";
-                        ////command.Parameters.AddWithValue("@IdSession", session.IdSession);
-                        ////command.Parameters.AddWithValue("@IdUser", session.IdUser);
-                        ////command.Parameters.AddWithValue("@WaterUsed", session.WaterUsed);
-                        ////command.Parameters.AddWithValue("@MoneySaved", session.MoneySaved);
-                        ////command.Parameters.AddWithValue("@EcoScore", session.EcoScore);
-                        ////command.Parameters.AddWithValue("@AverageTemp", session.AverageTemp);
-                        ////command.Parameters.AddWithValue("@Duration", session.Duration);
-                        ////command.Parameters.AddWithValue("@Timestamp", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "w. Europe Standard Time"));
+//                        ////string sql = "INSERT INTO Session VALUES(@IdSession, @IdUser, @WaterUsed, @MoneySaved, @EcoScore, @AverageTemp, @Duration, @Timestamp);";
+//                        ////command.Parameters.AddWithValue("@IdSession", session.IdSession);
+//                        ////command.Parameters.AddWithValue("@IdUser", session.IdUser);
+//                        ////command.Parameters.AddWithValue("@WaterUsed", session.WaterUsed);
+//                        ////command.Parameters.AddWithValue("@MoneySaved", session.MoneySaved);
+//                        ////command.Parameters.AddWithValue("@EcoScore", session.EcoScore);
+//                        ////command.Parameters.AddWithValue("@AverageTemp", session.AverageTemp);
+//                        ////command.Parameters.AddWithValue("@Duration", session.Duration);
+//                        ////command.Parameters.AddWithValue("@Timestamp", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "w. Europe Standard Time"));
 
-                        //command.CommandText = sql;
-                        //command.ExecuteNonQuery();
-                    }
+//                        //command.CommandText = sql;
+//                        //command.ExecuteNonQuery();
+//                    }
 
-                }
-                return req.CreateResponse(HttpStatusCode.OK, true);
+//                }
+//                return req.CreateResponse(HttpStatusCode.OK, true);
 
-            }
-            catch (Exception ex)
-            {
-#if RELEASE
-                return req.CreateResponse(HttpStatusCode.InternalServerError);
-#endif
-#if DEBUG
-                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
-#endif
-            }
-        }
+//            }
+//            catch (Exception ex)
+//            {
+//#if RELEASE
+//                return req.CreateResponse(HttpStatusCode.InternalServerError);
+//#endif
+//#if DEBUG
+//                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+//#endif
+//            }
+//        }
 
         [FunctionName("CalculateSession")]
         public static async Task<HttpResponseMessage> CalculateSession([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SmartShower/calculateSession/{idSession}")]HttpRequestMessage req, string idSession, TraceWriter log)
@@ -756,7 +804,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 TimeSpan duration = sessionData[sessionData.Count - 1].Timestamp - sessionData[0].Timestamp;
                 foreach (SessionCosmosDb se in sessionData)
                 {
-                    // log.Info(se.ToString());
                     averageTemp += se.Temp;
                     waterUsed += se.WaterUsage * 3;
                 }
