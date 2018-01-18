@@ -712,7 +712,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                                 MoneySaved = float.Parse(reader["MoneySaved"].ToString()),
                                 EcoScore = float.Parse(reader["EcoScore"].ToString()),
                                 AverageTemp = float.Parse(reader["AverageTemp"].ToString()),
-                                Duration = Convert.ToInt32(reader["Duration"].ToString()),
+                                Duration = TimeSpan.Parse(reader["Duration"].ToString()),
                                 Timestamp = Convert.ToDateTime(reader["Timestamp"])
 
                             });
