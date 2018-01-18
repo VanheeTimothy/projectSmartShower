@@ -647,7 +647,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             {
                                 IdUser = new Guid(reader["IdUser"].ToString()),
                                 Name = reader["Name"].ToString(),
-                                Photo = reader["Photo"].ToString()
+                                Photo = reader["Photo"].ToString(),
+                           
                             });
                         }
                     }

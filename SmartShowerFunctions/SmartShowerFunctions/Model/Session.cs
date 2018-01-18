@@ -22,7 +22,7 @@ namespace SmartShowerFunctions.Model
         [JsonProperty("averagetemp")]
         public float AverageTemp { get; set; }
         [JsonProperty("duration")]
-        public int Duration { get; set; }
+        public TimeSpan Duration { get; set; }
         [JsonProperty("timestamp")]
         public DateTime Timestamp { get; set; }
         [JsonProperty("datalength")] // int om te bepalen data tijdspanne zit niet in de database
