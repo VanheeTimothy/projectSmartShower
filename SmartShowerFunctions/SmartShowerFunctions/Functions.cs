@@ -623,6 +623,49 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
+        [FunctionName("GetAllFriendsFromUser")]
+        public static async Task<HttpResponseMessage> GetAllFriendsFromUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetAllFriendsFromUser")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                List<User> Users = new List<User>();
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo] FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser];";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            Users.Add(new User
+                            {
+                                IdUser = new Guid(reader["IdUser"].ToString()),
+                                Name = reader["Name"].ToString(),
+                                Photo = reader["Photo"].ToString()
+                            });
+                        }
+                    }
+                }
+                return req.CreateResponse(HttpStatusCode.OK, Users);
+
+            }
+            catch(Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
 
 
 
