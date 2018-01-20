@@ -1,6 +1,6 @@
 # smartShower API
 
-languages, libraries, tools and technologies used
+##languages, libraries, tools and technologies used
 	De API is een c# .NET cloud Microsoft.Azure Functions gebouwd in een visual studio 2017 omgeving.
 	Volgende assemblies, dependencies zijn gebruikt geweest voor de opbouw:
 		using System;
