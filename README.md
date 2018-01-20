@@ -1,22 +1,22 @@
 # smartShower API
 
 languages, libraries, tools and technologies used
-		De API is een c# .NET cloud Microsoft.Azure Functions gebouwd in een visual studio 2017 omgeving.
-		Volgende assemblies, dependencies zijn gebruikt geweest voor de opbouw:
-		using System;
-		•	using System.Collections.Generic;
-		•	using System.Data;
-		•	using System.Data.SqlClient;
-		•	using System.Diagnostics;
-		•	using System.Linq;
-		•	using System.Net;
-		•	using System.Net.Http;
-		•	using System.Threading.Tasks;
-		•	using Microsoft.Azure.Documents.Client;
-		•	using Microsoft.Azure.WebJobs;
-		•	using Microsoft.Azure.WebJobs.Extensions.Http;
-		•	using Microsoft.Azure.WebJobs.Host;
-		•	using Newtonsoft.Json;
+De API is een c# .NET cloud Microsoft.Azure Functions gebouwd in een visual studio 2017 omgeving.
+Volgende assemblies, dependencies zijn gebruikt geweest voor de opbouw:
+* using System;
+* using System.Collections.Generic;
+* using System.Data;
+* using System.Data.SqlClient;
+* using System.Diagnostics;
+* using System.Linq;
+* using System.Net;
+* using System.Net.Http;
+* using System.Threading.Tasks;
+* using Microsoft.Azure.Documents.Client;
+* using Microsoft.Azure.WebJobs;
+* using Microsoft.Azure.WebJobs.Extensions.Http;
+* using Microsoft.Azure.WebJobs.Host;
+* using Newtonsoft.Json;
 
 Azure is gelinkt aan github  voor synchronisatie van de code.
 De entity framework is gebruikt om data op te halen en weg te schrijven naar SQL database: SmartShowerDb. 
