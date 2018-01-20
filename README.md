@@ -156,7 +156,8 @@ bij de API horen volgende klassen:
 * UserShower.cs
 De klasses zijn terug te vinden in het project SmartShowerFunctions in de map Model.
 
-## Configuratie
+## local.settings.json
+vergeet niet alle waarden correct in te vullen aan de hand van je eigen Azure account indien je zelf azure functions wilt aanmaken
 ```
 {
 			"IsEncrypted": false,
