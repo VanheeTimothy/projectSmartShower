@@ -28,18 +28,14 @@ Base-url: https://smartshowerfunctions.azurewebsites.net/
 Functions.cs  class neemt de volledige communciatie op zich en volgende calls zijn mogelijk:
 
 
-
 ### POST RegisterUser
-```
 Hier wordt een controle gedaan of het email adres al dan niet bestaat in de database. 
 Indien dit het geval is, wordt een Forbidden status code meegeven. 
 Wanneer het emailadres niet gekend is, wordt een nieuwe gebruiker aangemaakt in de database. 
 Men krijgt dan status 200 OK.
 https://smartshowerfunctions.azurewebsites.net/api/SmartShower/User/Reg
-```
 
 ### POST RegisterShower
-```
 Deze functie is geschreven om zelf een douche te registreren. 
 Bij het prototype van de smartShower is de IdShower hardcode in de arduino. 
 Dit wil zeggen dat er van deze functie momenteel geen gebruik wordt gemaakt. 
@@ -49,17 +45,15 @@ Standaard staat de kostprijs per liter op 0.005€.
 RETURN 200 OK indien de functie correct uitgevoerd werd. 
 Indien de douche al in de database zit, krijgt men een Forbidden terug.
 https://smartshowerfunctions.azurewebsites.net/api/SmartShower/Shower/Reg
-```
+
 ### POST RegisterUserShower
-```
 Bij deze call wordt een gebruiker aan een douche gelinkt. 
 In de body wordt een idUser en IdShower meegegeven. 
 RETURN indien er geen douche gevonden is, een not Found statuscode terug. 
 Men krijgt een 200 bij succes alsook het idUser en idShower.
 https://smartshowerfunctions.azurewebsites.net/api/SmartShower/UserShower/Reg
-```
+
 ### POST GetAvailableColors
-```
 Er wordt een idShower meegestuurd in de body. 
 Door een joinquery worden alle kleuren opgevraagd die al in gebruik zijn. 
 Vervolgens worden ze uit een list met alle kleuren verwijderd. 
@@ -68,7 +62,6 @@ Noot: voor het datatype van de kleuren is  gebruikt gemaakt van integers
 RETURN bij succes statuscode 200, en een list met kleuren. 
 Bij een failure wordt een internalServerError weergegeven
 https://smartshowerfunctions.azurewebsites.net/api/SmartShower/GetSessions
-```
 ### POST RegisterShower
 ```
 Deze functie is geschreven om zelf een douche te registreren. Bij het prototype van de smartShower is de IdShower hardcode in de arduino. Dit wil zeggen dat er van deze functie momenteel geen gebruik wordt gemaakt. Toch kan deze functie in productie handig zijn.  Er wordt verwacht dat men in de body een idShower en waterCost meegeeft. Standaard staat de kostprijs per liter op 0.005€.
