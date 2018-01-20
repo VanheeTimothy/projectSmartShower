@@ -1,6 +1,6 @@
 # smartShower API
 
-languages, libraries, tools and technologies used
+	languages, libraries, tools and technologies used
 		De API is een c# .NET cloud Microsoft.Azure Functions gebouwd in een visual studio 2017 omgeving.
 		Volgende assemblies, dependencies zijn gebruikt geweest voor de opbouw:
 		•	using System;
@@ -21,7 +21,7 @@ languages, libraries, tools and technologies used
 	Azure is gelinkt aan github  voor synchronisatie van de code.
 	De entity framework is gebruikt om data op te halen en weg te schrijven naar SQL database: SmartShowerDb. Alle data die gelogt wordt door de senoren, die aan de Arduino hangen, wordt doorgestuurd naar een cosmosDb die online staat op Azure. 
 
-Overzicht van de API
+	Overzicht van de API
 		Communicatie verloopt over HTTP
 		Base-url: https://smartshowerfunctions.azurewebsites.net/
 		Functions.cs  class neemt de volledige communciatie op zich en volgende calls zijn mogelijk:
@@ -128,10 +128,10 @@ Overzicht van de API
 
 		  }
 		}
-Waneer men alles online wilt testen mag men niet vergeten de connectionString toe te voegen aan de azure function. Ook aan de cosmosDb moeten zoals de host, key, databaseName en cosmoscollectionId worden gecontroleerd zodat alle waarden juist zijn.
+		Waneer men alles online wilt testen mag men niet vergeten de connectionString toe te voegen aan de azure function. Ook aan de cosmosDb moeten zoals de host, key, databaseName en cosmoscollectionId worden gecontroleerd zodat alle waarden juist zijn.
 
-Databases
-MSSQL: SmartShowerDb
-ERD-schema
- 
-ERD-schema SmartShower
+		Databases
+		MSSQL: SmartShowerDb
+		ERD-schema
+		 
+		ERD-schema SmartShower
