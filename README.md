@@ -179,6 +179,6 @@ Waneer men alles online wilt testen mag men niet vergeten de connectionString to
 ## Databases
 * MSSQL: SmartShowerDb
 * NoSQL: comosDb
-###ERD-schema
-ERD-schema SmartShower
+### ERD-schema
+ERD-schema SmartShowerDb
 ![alt text](https://github.com/VanheeTimothy/projectSmartShower/blob/master/db.png)
