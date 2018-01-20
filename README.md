@@ -104,7 +104,6 @@ Overzicht van de API
 			o	Opnieuw wordt  in de body een idUser meegegeven. In de database wordt gekeken in welke groepen deze idUser terug te vinden is. Vervolgens wordt in deze groepen gekeken welke andere gebruikers erin zitten. Deze personen worden beschouwd als vrienden van de gebruiker. 
 			o	RETURN bij succes statuscode 200 en een list met users die een gemeenschappelijke groep delen. Bij failure krijgt de gebruiker een internalServerError.
 			o	https://smartshowerfunctions.azurewebsites.net/api/SmartShower/getAllGroupsFromUser
- 
 	klassen
 		bij de API horen volgende klassen:
 			•	Session.cs
