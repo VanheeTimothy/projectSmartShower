@@ -33,7 +33,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             {
                 var content = await req.Content.ReadAsStringAsync();
                 var user = JsonConvert.DeserializeObject<User>(content);
-                Guid clientId = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
+                //Guid clientId = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
 
 
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
@@ -61,7 +61,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             string sql = "INSERT INTO Users VALUES(@Guid, @Name, @Password, @Email, @Color, @MaxShowerTime, @IdealTemperature, @Monitor, @Photo)";
                             command.CommandText = sql;
 
-                            command.Parameters.AddWithValue("@Guid", clientId);
+                            command.Parameters.AddWithValue("@Guid", user.IdUser);
                             command.Parameters.AddWithValue("@Name", user.Name);
                             command.Parameters.AddWithValue("@Password", user.Password);
                             command.Parameters.AddWithValue("@Email", user.Email);
