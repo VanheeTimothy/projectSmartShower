@@ -7,7 +7,7 @@ dit is onderdeel van het project SmartShower
 De eerste stap is het dowloaden van de Arduino Ide. Vervolgens kan u de software installeren. Tijdens de installatie kunt u de arduino aansluiten via de usb met de computer. Eenmaal de installatie is voltooid kan u het arduino.ino  bestand uploaden.
 ### Mogelijke problemen
 Problemen bij het uploaden naar het board
-![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+![alt text](https://github.com/VanheeTimothy/projectSmartShower/blob/master/RPi/error.png)
 Navigeer onder het tabblad hulpmiddelen >> poort en selecteer de aangeven poort bv COM3.
 
 ## Configuratie raspberry pi 3
