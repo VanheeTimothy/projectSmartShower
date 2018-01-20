@@ -174,9 +174,10 @@ vergeet niet alle waarden correct in te vullen aan de hand van je eigen Azure ac
 		}
 ```
 
-## Noot
+### Noot
 Waneer men alles online wilt testen mag men niet vergeten de connectionString toe te voegen aan de azure function. Ook aan de cosmosDb moeten zoals de host, key, databaseName en cosmoscollectionId worden gecontroleerd zodat alle waarden juist zijn.
-Databases
-MSSQL: SmartShowerDb
-ERD-schema
+## Databases
+* MSSQL: SmartShowerDb
+* NoSQL: comosDb
+###ERD-schema
 ERD-schema SmartShower
