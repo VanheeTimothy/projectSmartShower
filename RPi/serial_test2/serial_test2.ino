@@ -19,28 +19,31 @@ void setup() {
 
 void loop() {
   //pinmode is niet nodig want hij heeft slechts 1 toestand
-  //sensorWaarde = analogRead(lichtSensor); //Dit is een getal van 0 tot 1023
- /* Serial.println("Idshower");
-  Serial.println(String(idShower));
-  Serial.println("profileNr");
-  Serial.println(String(profileNumber));
-  Serial.println("tijdfase");
-  Serial.println(String(tijdFase));
-  Serial.println("Temp");
-  Serial.println(String(Temp));
-  Serial.println("waterUsage");
-  Serial.println(String(waterUsage));*/
+  sensorWaarde = analogRead(lichtSensor); //Dit is een getal van 0 tot 1023
+ 
 
-  
-
-std::map<String, String> mySession; 
+  std::map<String, String> mySession; 
 mySession["idshower"] = String(idShower);
 mySession["profilenumber"] =  String(profileNumber);
 mySession["tijdfase"] = String(tijdFase);
 mySession["temp"] = String(Temp);
 mySession["waterusage"] = String(waterUsage);
 
-Serial.println(mySession["idshower"] + " "+ mySession["profilenumber"] + " "+ mySession["tijdfase"]+ " "+mySession["temp"]+ " "+mySession["waterusage"]);
+  
+  if(sensorWaarde > 100){
+    Serial.println(mySession["idshower"] + " "+ mySession["profilenumber"] + " "+ mySession["tijdfase"]+ " "+mySession["temp"]+ " "+mySession["waterusage"]);
+    waterUsage ++;
+    delay(2000);
+  }
+  else{
+    Serial.println("false");
+    waterUsage = 0;
+    delay(500);
+  }
+
+
+
+
 
 
 //c++0x too
@@ -53,8 +56,7 @@ Serial.println(mySession["idshower"] + " "+ mySession["profilenumber"] + " "+ my
     { "temp", String(Temp) },
     { "waterusage", String(waterUsage) }
 };*/
-  delay(100);
-  waterUsage ++;
+  
 }
 
 float conversie(int sensorWaarde)//sensorwaarde als parameter want je moet deze converteren
