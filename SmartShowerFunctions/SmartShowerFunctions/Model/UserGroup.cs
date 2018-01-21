@@ -15,6 +15,8 @@ namespace SmartShowerFunctions.Model
         public Guid IdUser { get; set; }
         [JsonProperty("pending")]
         public bool Pending { get; set; }
+        [JsonProperty("withsessiondata")]
+        public bool WithSessionData { get; set; } // zit niet in de database, is voor een CASE bij GetAllFriendsFromUserdata
 
 
     }

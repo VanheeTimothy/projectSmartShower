@@ -583,7 +583,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         {
             try
             {
-                List<UserGroup> GroupInfo = new List<UserGroup>();
+                List<Groups> GroupInfo = new List<Groups>();
                 var content = await req.Content.ReadAsStringAsync();
                 var group = JsonConvert.DeserializeObject<UserGroup>(content);
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
@@ -592,16 +592,18 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        string sql = "select IdGroup from UserGroup WHERE IdUser = @IdUser and Pending = 0;";
+                        string sql = "SELECT Groups.IdGroup, Name, Picture FROM dbo.Groups INNER JOIN UserGroup ON Groups.IdGroup = dbo.UserGroup.IdGroup WHERE IdUser = @IdUser AND dbo.UserGroup.Pending = 0;";
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@IdUser", group.IdUser);
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
                         {
-                            GroupInfo.Add(new UserGroup()
+                            GroupInfo.Add(new Groups()
                             {
                                 IdGroup = new Guid(reader["IdGroup"].ToString()),
-                                IdUser = group.IdUser
+                                Name = reader["Name"].ToString(),
+                                Picture = reader["Picture"].ToString()
+
                             });
 
 
@@ -628,7 +630,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         {
             try
             {
-                List<User> Users = new List<User>();
+                List<User> Friends = new List<User>();
+                List<GroupSessions> FriendsWithSessionData = new List<GroupSessions>();
                 var content = await req.Content.ReadAsStringAsync();
                 var group = JsonConvert.DeserializeObject<UserGroup>(content);
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
@@ -637,23 +640,60 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        string sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo] FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser];";
-                        command.CommandText = sql;
-                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
-                        SqlDataReader reader = command.ExecuteReader();
-                        while (reader.Read())
+                        string sql = "";
+                        switch (group.WithSessionData)
                         {
-                            Users.Add(new User
-                            {
-                                IdUser = new Guid(reader["IdUser"].ToString()),
-                                Name = reader["Name"].ToString(),
-                                Photo = reader["Photo"].ToString(),
-                           
-                            });
+                            case true:
+                                sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = '06B247E1-EEA4-EF62-1111-A7838E4E0DBF' INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser;";
+                                command.CommandText = sql;
+                                command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                                SqlDataReader reader = command.ExecuteReader();
+                                while (reader.Read())
+                                {
+                                    FriendsWithSessionData.Add(new GroupSessions
+                                    {
+                                        IdUser = new Guid(reader["IdUser"].ToString()),
+                                        Name = reader["Name"].ToString(),
+                                        Photo = reader["Photo"].ToString(),
+                                        WaterUsed = float.Parse(reader["WaterUsed"].ToString()),
+                                        MoneySaved = float.Parse(reader["MoneySaved"].ToString()),
+                                        EcoScore = float.Parse(reader["EcoScore"].ToString()),
+                                        AverageTemp = float.Parse(reader["AverageTemp"].ToString()),
+                                        Duration = TimeSpan.Parse(reader["Duration"].ToString()),
+                                        Timestamp = Convert.ToDateTime(reader["Timestamp"])
+
+                                    });
+                                }
+                               
+
+                                break;
+                            case false:
+                                sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo] FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser];";
+                                command.CommandText = sql;
+                                command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                                SqlDataReader readerSession = command.ExecuteReader();
+                                while (readerSession.Read())
+                                {
+                                    Friends.Add(new User
+                                    {
+                                        IdUser = new Guid(readerSession["IdUser"].ToString()),
+                                        Name = readerSession["Name"].ToString(),
+                                        Photo = readerSession["Photo"].ToString(),
+
+                                    });
+                                }
+
+                                break;
+
                         }
+                        
                     }
+                    if(group.WithSessionData)
+                        return req.CreateResponse(HttpStatusCode.OK, FriendsWithSessionData);
+                    else
+                        return req.CreateResponse(HttpStatusCode.OK, Friends);
+
                 }
-                return req.CreateResponse(HttpStatusCode.OK, Users);
 
             }
             catch(Exception ex)
