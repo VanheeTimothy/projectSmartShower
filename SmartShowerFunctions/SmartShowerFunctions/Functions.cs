@@ -641,7 +641,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
                         string sql = "";
-                        switch (group.WithSessionData)
+                        switch (group.WithSessionData) // property van de klasse UserGroup >> zit niet in de database. 
                         {
                             case true:
                                 sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = '06B247E1-EEA4-EF62-1111-A7838E4E0DBF' INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser;";
@@ -843,7 +843,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 foreach (SessionCosmosDb se in sessionData)
                 {
                     averageTemp += se.Temp;
-                    waterUsed += se.WaterUsage * 3;
+                    waterUsed += se.WaterUsage * 2;
                 }
                 averageTemp = averageTemp / sessionData.Count();
 
