@@ -28,6 +28,8 @@ namespace SmartShowerFunctions.Model
         [JsonProperty("photo")]
         public string Photo { get; set; }
 
+        [JsonProperty("shower")]
+        public Shower Shower { get; set; }
 
     }
 }

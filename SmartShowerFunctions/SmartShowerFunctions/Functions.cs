@@ -212,7 +212,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
 
-                        string sql = "SELECT * FROM Users where Email like @Email and Password = @password;";
+                        string sql = "SELECT users.IdUser, users.Name, users.Email, users.Color, users.MaxShowerTime, users.IdealTemperature, users.Monitor, users.Photo, Shower.IdShower, dbo.Shower.WaterCost FROM Users INNER JOIN dbo.UserShower ON Users.IdUser = dbo.UserShower.IdUser INNER JOIN Shower ON Shower.IdShower = UserShower.IdShower where Users.Email like @Email and Users.Password = @Password;";
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
                         command.Parameters.AddWithValue("@password", User.Password);
@@ -601,7 +601,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
                         string sql = "SELECT Groups.IdGroup, Name, Photo FROM dbo.Groups INNER JOIN UserGroup ON Groups.IdGroup = dbo.UserGroup.IdGroup WHERE IdUser = @IdUser AND dbo.UserGroup.Pending = 0;";
-                        command.CommandText = sql;
+                        command.CommandText = sql; 
                         command.Parameters.AddWithValue("@IdUser", group.IdUser);
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
