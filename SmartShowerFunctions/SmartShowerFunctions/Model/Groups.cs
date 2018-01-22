@@ -13,7 +13,7 @@ namespace SmartShowerFunctions.Model
         public Guid IdGroup { get; set; }
         [JsonProperty("name")]
         public string Name { get; set; }
-        [JsonProperty("picture")]
-        public string Picture { get; set; }
+        [JsonProperty("photo")]
+        public string Photo { get; set; }
     }
 }

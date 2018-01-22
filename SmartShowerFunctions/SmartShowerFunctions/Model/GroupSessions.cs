@@ -9,12 +9,16 @@ namespace SmartShowerFunctions.Model
 {
     class GroupSessions
     {
-        [JsonProperty("iduser")]
-        public Guid IdUser { get; set; }
+        [JsonProperty("idgroup")]
+        public Guid IdGroup { get; set; }
         [JsonProperty("name")]
         public string Name { get; set; }
         [JsonProperty("photo")]
         public string Photo { get; set; }
+        [JsonProperty("iduser")]
+        public Guid IdUser { get; set; }
+        [JsonProperty("idsession")]
+        public Guid IdSession { get; set; }
         [JsonProperty("waterused")]
         public float WaterUsed { get; set; }
         [JsonProperty("moneysaved")]

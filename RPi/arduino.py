@@ -5,27 +5,27 @@ import requests
 import uuid
 import datetime
 from RPi import GPIO
-
 import serial
-GPIO.setwarnings(False)
 ser = serial.Serial('/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0', 9600, timeout=1)  # open serial port
-GPIO.setmode(GPIO.BCM)
 
-
-RGB = [26,19,13]
-GPIO.setup(RGB, GPIO.OUT)
-GPIO.output(RGB, GPIO.LOW)
-
-GPIO.output(RGB[2], GPIO.HIGH)
 ## script is running
 print("#####################################################################################")
 print("aruino.py script is running")
 print("This script is part of a school project SmartShower")
 print("For more info please visit: https://github.com/VanheeTimothy/projectSmartShower/tree/master/RPi")
-print("#####################################################################################")
+print("#################################### #################################################")
 print("\n")
 print("script is waiting for first shower session...")
 print("\n\n")
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+
+RGB = [26,19,13]
+
+GPIO.setup(RGB, GPIO.OUT)
+GPIO.output(RGB, GPIO.LOW)
+GPIO.output(RGB[2], GPIO.HIGH)
 
 isRunning = False
 guid = uuid.uuid4()
@@ -37,7 +37,7 @@ async def TransmitData(parts, guid):
             "tijdfase": int(parts[2]), "temp": float(parts[3]), "waterusage": int(parts[4]),
             "timestamp": str(datetime.datetime.now())}
     jsondata = json.dumps(data)
-    print(jsondata)
+    print("\n"+jsondata)
     requests.post(url, data=jsondata)
     GPIO.output(RGB[2], GPIO.LOW)
     time.sleep(0.05)
@@ -58,7 +58,6 @@ async def calculateData(sessionid):
 
 
 async def main(isRunning, guid):
-
     while 1:
         try:
             #TransmitData()
@@ -85,6 +84,8 @@ async def main(isRunning, guid):
             print("##########")
             print(ex)
             print("##########")
+            with open("error.txt", "a") as f:
+                f.write("Failed to decode: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
             GPIO.output(RGB[2], GPIO.LOW)
             GPIO.output(RGB[:2], GPIO.HIGH)  # Magneta when UnicodeDecodeError occur
             time.sleep(1)
@@ -92,17 +93,21 @@ async def main(isRunning, guid):
             print("##########")
             print(ex)
             print("##########")
+            with open("error.txt", "a") as f:
+                f.write("An error has occurd: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
             GPIO.output(RGB[0], GPIO.HIGH) # red on Error
             GPIO.output(RGB[1:], GPIO.LOW)
             time.sleep(1)
 
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as K:
             GPIO.output(RGB, GPIO.LOW)
             print("\n\n\n\n")
             print("##################################")
             print("script ended by user")
             print("##################################")
+            with open("error.txt", "a") as f:
+                f.write("User ended the script: {0} \ton {1}\n".format(str(K), str(datetime.datetime.now())))
             GPIO.output(RGB[0], GPIO.HIGH)  #Yellow on pause
             GPIO.output(RGB[2], GPIO.HIGH)
             GPIO.output(RGB[1], GPIO.LOW)
