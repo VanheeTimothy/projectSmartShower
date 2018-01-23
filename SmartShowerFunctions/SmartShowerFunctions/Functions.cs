@@ -558,15 +558,36 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                                 IdUser = new Guid(ds.Tables[0].Rows[0]["IdUser"].ToString()),
                                 Name = ds.Tables[0].Rows[0]["Name"].ToString(),
                                 Color = Convert.ToInt32(ds.Tables[0].Rows[0]["Color"]),
-                                Photo = ds.Tables[0].Rows[0]["Photo"].ToString(),
+                                Photo = ds.Tables[0].Rows[0]["Photo"].ToString()
 
                             };
-                            string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, 1);"; // invite verzonden, pending op true
-                            command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
-                            command.Parameters.AddWithValue("@IdUser", p.IdUser);
-                            command.CommandText = sql;
-                            command.ExecuteNonQuery();
-                            return req.CreateResponse(HttpStatusCode.OK, p);
+
+                    
+                            string checkUserGroup = "SELECT * FROM UserGroup WHERE IdUser = @UserId and IdGroup = @GroupId";
+                            command.Parameters.AddWithValue("@UserId", p.IdUser);
+                            command.Parameters.AddWithValue("@GroupId", group.IdGroup);
+                            command.CommandText = checkUserGroup;
+                            ds.Clear();
+                            da = new SqlDataAdapter(command);         
+                            da.Fill(ds);
+                            bool InviteAllreadyExists = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
+                            if (InviteAllreadyExists)
+                            {
+                                return req.CreateErrorResponse(HttpStatusCode.BadRequest, "Invite already exists");
+
+                            }
+                            else
+                            {
+
+                                string sql = "INSERT INTO UserGroup VALUES(@IdGroup, @IdUser, 1);"; // invite verzonden, pending op true
+                                command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                                command.Parameters.AddWithValue("@IdUser", p.IdUser);
+                                command.CommandText = sql;
+                                command.ExecuteNonQuery();
+                                return req.CreateResponse(HttpStatusCode.OK, p);
+                            }
+
+
 
                         }
                         else
