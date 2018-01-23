@@ -212,7 +212,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
 
-                        string sql = "SELECT * FROM Users where Email like @Email and Password = @password;";
+                        string sql = "SELECT dbo.Users.Name, users.Email, users.Color, users.MaxShowerTime,users.IdealTemperature, users.Monitor, users.Photo, dbo.Shower.IdShower, dbo.Shower.WaterCost  FROM dbo.Users INNER JOIN dbo.UserShower ON UserShower.IdUser = Users.IdUser INNER JOIN dbo.Shower ON Shower.IdShower = UserShower.IdShower where dbo.Users.Email = @Email and dbo.Users.Password = @password";
+                    
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
                         command.Parameters.AddWithValue("@password", User.Password);
@@ -222,8 +223,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         DataSet ds = new DataSet();
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
-                        //connection.Close();
-
 
                         bool loginSuccesFull = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (loginSuccesFull)
@@ -267,12 +266,10 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         string sql = "SELECT Name, Email, Color, MaxShowerTime, IdealTemperature, Monitor, Photo FROM Users WHERE IdUser Like @IdUser;";
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@IdUser", User.IdUser);
-                        //command.ExecuteNonQuery();
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
                         {
 
-                            //IdUser = Guid.TryParse(reader["IdUser"], ),
                             userInfo.Name = reader["Name"].ToString();
                             userInfo.Email = reader["Email"].ToString();
                             userInfo.Color = Convert.ToInt32(reader["Color"]);
