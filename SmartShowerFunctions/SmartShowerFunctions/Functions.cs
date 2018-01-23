@@ -212,7 +212,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
 
-                        string sql = "SELECT users.IdUser, users.Name, users.Email, users.Color, users.MaxShowerTime, users.IdealTemperature, users.Monitor, users.Photo, Shower.IdShower, dbo.Shower.WaterCost FROM Users INNER JOIN dbo.UserShower ON Users.IdUser = dbo.UserShower.IdUser INNER JOIN Shower ON Shower.IdShower = UserShower.IdShower where Users.Email like @Email and Users.Password = @Password;";
+                        string sql = "SELECT * FROM Users where Email like @Email and Password = @password;";
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
                         command.Parameters.AddWithValue("@password", User.Password);
@@ -403,9 +403,10 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.Parameters.AddWithValue("@Photo", group.Photo);
                         command.CommandText = sql;
                         command.ExecuteNonQuery();
-                        string addUser = "INSERT INTO UserGroup VALUES(@GroupId, @IdUser);";
+                        string addUser = "INSERT INTO UserGroup VALUES(@GroupId, @IdUser, @pending)";
                         command.Parameters.AddWithValue("@GroupId", group.IdGroup);
                         command.Parameters.AddWithValue("@IdUser", user.IdUser);
+                        command.Parameters.AddWithValue("@pending", 0);
                         command.CommandText = addUser;
                         command.ExecuteNonQuery();
 
@@ -425,6 +426,50 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #endif
             }
         }
+
+//        [FunctionName("MakeGroup")]
+//        public static async Task<HttpResponseMessage> MakeGroup([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/new/")]HttpRequestMessage req, TraceWriter log)
+//        {
+//            try
+//            {
+//                //Guid idGroup = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
+//                var content = await req.Content.ReadAsStringAsync();
+//                var group = JsonConvert.DeserializeObject<Groups>(content);
+//                var user = JsonConvert.DeserializeObject<User>(content);
+//                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+//                {
+//                    connection.Open();
+//                    using (SqlCommand command = new SqlCommand())
+//                    {
+//                        command.Connection = connection;
+//                        string sql = "UPDATE INTO Groups VALUES(@IdGroup, @Name, @Photo);";
+//                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+//                        command.Parameters.AddWithValue("@Name", group.Name);
+//                        command.Parameters.AddWithValue("@Photo", group.Photo);
+//                        command.CommandText = sql;
+//                        command.ExecuteNonQuery();
+//                        string addUser = "INSERT INTO UserGroup VALUES(@GroupId, @IdUser);";
+//                        command.Parameters.AddWithValue("@GroupId", group.IdGroup);
+//                        command.Parameters.AddWithValue("@IdUser", user.IdUser);
+//                        command.CommandText = addUser;
+//                        command.ExecuteNonQuery();
+
+//                    }
+
+//                }
+//                return req.CreateResponse(HttpStatusCode.OK);
+
+//            }
+//            catch (Exception ex)
+//            {
+//#if RELEASE
+//                return req.CreateResponse(HttpStatusCode.InternalServerError);
+//#endif
+//#if DEBUG
+//                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+//#endif
+//            }
+//        }
 
         [FunctionName("DeleteGroup")]
         public static async Task<HttpResponseMessage> DeleteGroup([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "SmartShower/Group/delete/")]HttpRequestMessage req, TraceWriter log)
@@ -571,7 +616,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.Parameters.AddWithValue("@IdUser", group.IdUser);
                         command.ExecuteNonQuery();
                     }
-                    
+
                 }
                 return req.CreateResponse(HttpStatusCode.OK, true);
             }
@@ -601,7 +646,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
                         string sql = "SELECT Groups.IdGroup, Name, Photo FROM dbo.Groups INNER JOIN UserGroup ON Groups.IdGroup = dbo.UserGroup.IdGroup WHERE IdUser = @IdUser AND dbo.UserGroup.Pending = 0;";
-                        command.CommandText = sql; 
+                        command.CommandText = sql;
                         command.Parameters.AddWithValue("@IdUser", group.IdUser);
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
@@ -622,7 +667,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 return req.CreateResponse(HttpStatusCode.OK, GroupInfo);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 #if RELEASE
                 return req.CreateResponse(HttpStatusCode.InternalServerError);
@@ -649,10 +694,10 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
                         string sql = "";
-                        switch (group.WithSessionData) // property van de klasse UserGroup >> zit niet in de database. 
+                        switch (group.WithSessionData) //property van de klasse UserGroup >> zit niet in de database. 
                         {
                             case true:
-                                sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser;";
+                                sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser ORDER BY UserIdTable.IdUser;";
                                 command.CommandText = sql;
                                 command.Parameters.AddWithValue("@IdUser", group.IdUser);
                                 SqlDataReader reader = command.ExecuteReader();
@@ -672,7 +717,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
                                     });
                                 }
-                               
+
 
                                 break;
                             case false:
@@ -694,17 +739,70 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                                 break;
 
                         }
-                        
+
                     }
-                    if(group.WithSessionData)
-                        return req.CreateResponse(HttpStatusCode.OK, FriendsWithSessionData);
+                    if (group.WithSessionData)
+                    {
+                        GroupSessions result = new GroupSessions();
+                        List<GroupSessions> results = new List<GroupSessions>();
+
+                        Guid OldId = new Guid();
+                        Guid IdUser = new Guid();
+                        List<GroupSessions> DataForEachFriend = new List<GroupSessions>();
+
+                        for (int i = 0; i < FriendsWithSessionData.Count; i++)
+                        {
+                            IdUser = FriendsWithSessionData[i].IdUser;
+                            if (i > 0)
+                            {
+                                OldId = FriendsWithSessionData[i - 1].IdUser;
+                            }
+                            else
+                            {
+                                OldId = IdUser;
+                            }
+
+                            if (IdUser == OldId)
+                            {
+                                DataForEachFriend.Add(FriendsWithSessionData[i]);
+                            }
+
+                            if (IdUser != OldId || (i + 1) >= FriendsWithSessionData.Count)
+                            {
+                                result.IdUser = DataForEachFriend[0].IdUser;
+                                result.Name = DataForEachFriend[0].Name;
+                                result.Photo = DataForEachFriend[0].Photo;
+                                foreach (GroupSessions se in DataForEachFriend)
+                                {
+                                    result.WaterUsed += se.WaterUsed;
+                                    result.MoneySaved += se.MoneySaved;
+                                    result.EcoScore += se.EcoScore;
+                                    result.Duration += se.Duration;
+
+                                    Debug.WriteLine(se.Duration);
+                                    Debug.WriteLine(result.Duration);
+
+                                    result.AverageTemp += se.AverageTemp * (float)se.Duration.TotalSeconds;
+                                }
+                                result.AverageTemp = result.AverageTemp / (float)result.Duration.TotalSeconds;
+
+                                results.Add(result);
+
+                                result = new GroupSessions();
+                                DataForEachFriend.Clear();
+                                DataForEachFriend.Add(FriendsWithSessionData[i]);
+                            }
+                        }
+
+                        return req.CreateResponse(HttpStatusCode.OK, results);
+                    }
                     else
                         return req.CreateResponse(HttpStatusCode.OK, Friends);
 
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 #if RELEASE
                 return req.CreateResponse(HttpStatusCode.InternalServerError);
@@ -721,29 +819,34 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             try
             {
                 List<GroupSessions> GroupData = new List<GroupSessions>();
+                GroupData.Capacity = 999;
                 var content = await req.Content.ReadAsStringAsync();
                 var session = JsonConvert.DeserializeObject<Session>(content);
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
                 {
+
                     string sql = "";
                     connection.Open();
                     using (SqlCommand command = new SqlCommand())
                     {
                         switch (session.DataLenght)
                         {
+                            //sql = "SELECT * FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND dbo.Session.Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup; ";
+
                             case 0:
-                                sql = "SELECT dbo.UserGroup.IdGroup, dbo.Groups.Name, dbo.Groups.Photo, dbo.Session.IdUser, session.IdSession, Session.WaterUsed, Session.MoneySaved, dbo.Session.EcoScore, Session.AverageTemp,Session.Duration, dbo.Session.Timestamp FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Groups ON Groups.IdGroup = UserGroup.IdGroup WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup; ";
+                                sql = "SELECT * FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Groups on Groups.IdGroup = UserGroup.IdGroup WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND dbo.Session.Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup; ";
                                 break;
                             case 1:
-                                 sql = "SELECT dbo.UserGroup.IdGroup, dbo.Groups.Name, dbo.Groups.Photo, dbo.Session.IdUser, session.IdSession, Session.WaterUsed, Session.MoneySaved, dbo.Session.EcoScore, Session.AverageTemp,Session.Duration, dbo.Session.Timestamp FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Groups ON Groups.IdGroup = UserGroup.IdGroup WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND dbo.Session.Timestamp >= DATEADD(DAY, -7, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND dbo.Session.Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup;";
+                                sql = "SELECT * FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Groups on Groups.IdGroup = UserGroup.IdGroup WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND dbo.Session.Timestamp >= DATEADD(DAY, -7, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND dbo.Session.Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup;";
                                 break;
                             case 2:
-                                sql = "SELECT dbo.UserGroup.IdGroup, dbo.Groups.Name, dbo.Groups.Photo, dbo.Session.IdUser, session.IdSession, Session.WaterUsed, Session.MoneySaved, dbo.Session.EcoScore, Session.AverageTemp,Session.Duration, dbo.Session.Timestamp FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Groups ON Groups.IdGroup = UserGroup.IdGroup WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND dbo.Session.Timestamp >= DATEADD(DAY, -30, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND dbo.Session.Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup;";
+                                sql = "SELECT * FROM dbo.Session JOIN dbo.UserGroup on UserGroup.IdUser = Session.IdUser JOIN dbo.Groups on Groups.IdGroup = UserGroup.IdGroup WHERE dbo.UserGroup.IdGroup IN(SELECT dbo.UserGroup.IdGroup FROM dbo.UserGroup WHERE iduser = @IdUser) AND dbo.Session.Timestamp >= DATEADD(DAY, -30, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND dbo.Session.Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY dbo.UserGroup.IdGroup;";
                                 break;
                         }
                         command.Connection = connection;
-                        command.CommandText = sql;
                         command.Parameters.AddWithValue("@IdUser", session.IdUser);
+                        command.CommandText = sql;
+
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
                         {
@@ -767,12 +870,14 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     }
 
                 }
-                GroupSessions result = new GroupSessions();
 
-                result.IdGroup = GroupData[0].IdGroup;
+                GroupSessions result = new GroupSessions();
+                List<GroupSessions> results = new List<GroupSessions>();
+
                 Guid OldId = new Guid();
                 Guid IdGroup = new Guid();
                 List<GroupSessions> DataForEachGroup = new List<GroupSessions>();
+
                 for (int i = 0; i < GroupData.Count; i++)
                 {
                     IdGroup = GroupData[i].IdGroup;
@@ -785,31 +890,39 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         OldId = IdGroup;
                     }
 
-                    if(IdGroup == OldId)
+                    if (IdGroup == OldId)
                     {
                         DataForEachGroup.Add(GroupData[i]);
-
                     }
-                    else
+
+                    if (IdGroup != OldId || (i + 1) >= GroupData.Count)
                     {
-                        foreach(GroupSessions se in DataForEachGroup)
+                        result.IdGroup = DataForEachGroup[0].IdGroup;
+                        result.Name = DataForEachGroup[0].Name;
+                        result.Photo = DataForEachGroup[0].Photo;
+                        foreach (GroupSessions se in DataForEachGroup)
                         {
-                            result.WaterUsed += session.WaterUsed;
-                            result.MoneySaved += session.MoneySaved;
-                            result.EcoScore += session.EcoScore;
-                            result.Duration += session.Duration;
-                            result.AverageTemp += session.AverageTemp * (float)session.Duration.TotalSeconds;
+                            result.WaterUsed += se.WaterUsed;
+                            result.MoneySaved += se.MoneySaved;
+                            result.EcoScore += se.EcoScore;
+                            result.Duration += se.Duration;
+
+                            Debug.WriteLine(se.Duration);
+                            Debug.WriteLine(result.Duration);
+
+                            result.AverageTemp += se.AverageTemp * (float)se.Duration.TotalSeconds;
                         }
                         result.AverageTemp = result.AverageTemp / (float)result.Duration.TotalSeconds;
+
+                        results.Add(result);
+
+                        result = new GroupSessions();
                         DataForEachGroup.Clear();
-
+                        DataForEachGroup.Add(GroupData[i]);
                     }
-
                 }
 
-                return req.CreateResponse(HttpStatusCode.OK, result);
-
-
+                return req.CreateResponse(HttpStatusCode.OK, results);
             }
             catch (Exception ex)
             {
@@ -847,13 +960,13 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         switch (session.DataLenght)
                         {
                             case 0:
-                                sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+                                sql = "SELECT * FROM Session WHERE Session.IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
                                 break;
                             case 1:
-                                sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -7, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+                                sql = "SELECT * FROM Session WHERE Session.IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -7, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
                                 break;
                             case 2:
-                                sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -30, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+                                sql = "SELECT * FROM Session WHERE Session.IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -30, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
                                 break;
                         }
                         command.Parameters.AddWithValue("@IdUser", session.IdUser);
@@ -876,6 +989,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             });
                         }
                     }
+
                     return req.CreateResponse(HttpStatusCode.OK, sessions);
                 }
             }
@@ -889,6 +1003,123 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #endif
             }
         }
+
+        //        [FunctionName("GetFriendsScores")]
+        //        public static async Task<HttpResponseMessage> GetScore([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetFriendsScores")]HttpRequestMessage req, TraceWriter log)
+        //        {
+        //            try
+        //            {
+        //                List<Session> sessions = new List<Session>();
+        //                var content = await req.Content.ReadAsStringAsync();
+        //                var session = JsonConvert.DeserializeObject<Session>(content);
+
+        //                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+        //                {
+        //                    connection.Open();
+        //                    using (SqlCommand command = new SqlCommand())
+        //                    {
+        //                        command.Connection = connection;
+        //                        string sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+
+        //                        switch (session.DataLenght)
+        //                        {
+        //                            case 0:
+        //                                sql = "SELECT * FROM Session JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE Session.IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+        //                                break;
+        //                            case 1:
+        //                                sql = "SELECT * FROM Session JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE Session.IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -7, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+        //                                break;
+        //                            case 2:
+        //                                sql = "SELECT * FROM Session JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE Session.IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -30, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
+        //                                break;
+        //                        }
+        //                        command.Parameters.AddWithValue("@IdUser", session.IdUser);
+        //                        command.CommandText = sql;
+        //                        SqlDataReader reader = command.ExecuteReader();
+        //                        while (reader.Read())
+        //                        {
+        //                            sessions.Add(new Session
+        //                            {
+        //                                IdSession = new Guid(reader["IdSession"].ToString()),
+        //                                IdUser = new Guid(reader["IdUser"].ToString()),
+        //                                Name = reader["Name"].ToString(),
+        //                                Email = reader["Email"].ToString(),
+        //                                Color = Convert.ToInt32(session.Color),
+        //                                Photo = reader["Photo"].ToString(),
+        //                                WaterUsed = float.Parse(reader["WaterUsed"].ToString()),
+        //                                MoneySaved = float.Parse(reader["MoneySaved"].ToString()),
+        //                                EcoScore = float.Parse(reader["EcoScore"].ToString()),
+        //                                AverageTemp = float.Parse(reader["AverageTemp"].ToString()),
+        //                                Duration = TimeSpan.Parse(reader["Duration"].ToString()),
+        //                                Timestamp = Convert.ToDateTime(reader["Timestamp"]),
+        //                                DataLenght = Convert.ToInt32(session.DataLenght)
+
+        //                            });
+        //                        }
+        //                    }
+
+        //                    Session result = new Session();
+        //                    List<Session> results = new List<Session>();
+
+        //                    Guid OldId = new Guid();
+        //                    Guid IsUser = new Guid();
+        //                    List<Session> DataForEachFriend = new List<Session>();
+
+        //                    for (int i = 0; i < sessions.Count; i++)
+        //                    {
+        //                        IsUser = sessions[i].IdUser;
+        //                        if (i > 0)
+        //                        {
+        //                            OldId = sessions[i - 1].IdUser;
+        //                        }
+        //                        else
+        //                        {
+        //                            OldId = IsUser;
+        //                        }
+
+        //                        if (IsUser == OldId)
+        //                        {
+        //                            DataForEachFriend.Add(sessions[i]);
+        //                        }
+
+        //                        if (IsUser != OldId || (i + 1) >= sessions.Count)
+        //                        {
+        //                            result.IdUser = DataForEachFriend[0].IdUser;
+        //                            foreach (Session se in DataForEachFriend)
+        //                            {
+        //                                result.WaterUsed += se.WaterUsed;
+        //                                result.MoneySaved += se.MoneySaved;
+        //                                result.EcoScore += se.EcoScore;
+        //                                result.Duration += se.Duration;
+
+        //                                Debug.WriteLine(se.Duration);
+        //                                Debug.WriteLine(result.Duration);
+
+        //                                result.AverageTemp += se.AverageTemp * (float)se.Duration.TotalSeconds;
+        //                            }
+        //                            result.AverageTemp = result.AverageTemp / (float)result.Duration.TotalSeconds;
+
+        //                            results.Add(result);
+
+        //                            result = new Session();
+        //                            DataForEachFriend.Clear();
+        //                            DataForEachFriend.Add(sessions[i]);
+        //                        }
+        //                    }
+
+        //                    return req.CreateResponse(HttpStatusCode.OK, results);
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //#if RELEASE
+        //                return req.CreateResponse(HttpStatusCode.InternalServerError);
+        //#endif
+        //#if DEBUG
+        //                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+        //#endif
+        //            }
+        //        }
 
         [FunctionName("AddSessionToCosmosDb")]
         public static async Task<HttpResponseMessage> AddSessionToCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/AddSession")]HttpRequestMessage req, TraceWriter log)
@@ -926,7 +1157,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 // volgende stap uri prepareren
                 var docUrl = UriFactory.CreateDocumentCollectionUri(COSMOSDATABASE, COSMOSCOLLECTIONID);
                 IQueryable<SessionCosmosDb> logs = client.CreateDocumentQuery<SessionCosmosDb>($"/dbs/{COSMOSDATABASE}/colls/{COSMOSCOLLECTIONID}", new FeedOptions { EnableCrossPartitionQuery = true, MaxDegreeOfParallelism = 10, MaxBufferedItemCount = 100 }).Where(p => p.IdSession == new Guid(idSession));
-                
+
                 return req.CreateResponse(HttpStatusCode.OK, logs.ToList<SessionCosmosDb>());
             }
             catch (Exception ex)
@@ -948,7 +1179,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         {
             try
             {
-                
+
                 string url = String.Format("https://smartshowerfunctions.azurewebsites.net/api/SmartShower/getSession/{0}", idSession);
                 HttpClient client = new HttpClient();
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -978,7 +1209,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         DataSet ds = new DataSet();
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
-     
+
 
                         bool idUserFound = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (idUserFound)
@@ -998,11 +1229,11 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         else
                         {
                             return req.CreateResponse(HttpStatusCode.NotFound, false);
-                        }                        
+                        }
                     }
                 }
                 return req.CreateResponse(HttpStatusCode.OK);
-                
+
             }
             catch (Exception ex)
             {
@@ -1017,7 +1248,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
         }
 
         [FunctionName("GetAvailableColors")]
-        public static async Task<HttpResponseMessage> GetAvailableColors([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/getAvailableColors")]HttpRequestMessage req,  TraceWriter log)
+        public static async Task<HttpResponseMessage> GetAvailableColors([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/getAvailableColors")]HttpRequestMessage req, TraceWriter log)
         {
             try
             {
@@ -1043,7 +1274,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
                     }
                 }
-                foreach(int color in colors)
+                foreach (int color in colors)
                 {
                     allColors.Remove(color);
                 }
