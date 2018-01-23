@@ -427,49 +427,43 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
-//        [FunctionName("MakeGroup")]
-//        public static async Task<HttpResponseMessage> MakeGroup([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/new/")]HttpRequestMessage req, TraceWriter log)
-//        {
-//            try
-//            {
-//                //Guid idGroup = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
-//                var content = await req.Content.ReadAsStringAsync();
-//                var group = JsonConvert.DeserializeObject<Groups>(content);
-//                var user = JsonConvert.DeserializeObject<User>(content);
-//                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
-//                {
-//                    connection.Open();
-//                    using (SqlCommand command = new SqlCommand())
-//                    {
-//                        command.Connection = connection;
-//                        string sql = "UPDATE INTO Groups VALUES(@IdGroup, @Name, @Photo);";
-//                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
-//                        command.Parameters.AddWithValue("@Name", group.Name);
-//                        command.Parameters.AddWithValue("@Photo", group.Photo);
-//                        command.CommandText = sql;
-//                        command.ExecuteNonQuery();
-//                        string addUser = "INSERT INTO UserGroup VALUES(@GroupId, @IdUser);";
-//                        command.Parameters.AddWithValue("@GroupId", group.IdGroup);
-//                        command.Parameters.AddWithValue("@IdUser", user.IdUser);
-//                        command.CommandText = addUser;
-//                        command.ExecuteNonQuery();
+        [FunctionName("UpdateGroup")]
+        public static async Task<HttpResponseMessage> UpdatGroup([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "SmartShower/Group/update/")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                //Guid idGroup = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<Groups>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "UPDATE dbo.Groups SET Name = @Name, Photo = @Photo WHERE IdGroup = @IdGroup; ";
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                        command.Parameters.AddWithValue("@Name", group.Name);
+                        command.Parameters.AddWithValue("@Photo", group.Photo);
+                        command.CommandText = sql;
+                        command.ExecuteNonQuery();
 
-//                    }
+                    }
 
-//                }
-//                return req.CreateResponse(HttpStatusCode.OK);
+                }
+                return req.CreateResponse(HttpStatusCode.OK);
 
-//            }
-//            catch (Exception ex)
-//            {
-//#if RELEASE
-//                return req.CreateResponse(HttpStatusCode.InternalServerError);
-//#endif
-//#if DEBUG
-//                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
-//#endif
-//            }
-//        }
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
 
         [FunctionName("DeleteGroup")]
         public static async Task<HttpResponseMessage> DeleteGroup([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "SmartShower/Group/delete/")]HttpRequestMessage req, TraceWriter log)
@@ -619,6 +613,58 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 
                 }
                 return req.CreateResponse(HttpStatusCode.OK, true);
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
+
+        [FunctionName("GetAllUsersFromGroup")]
+        public static async Task<HttpResponseMessage> GetAllUsersFromGroup([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Group/getUsers/")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                List<User> UsersInfo = new List<User>();            
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<Groups>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "SELECT Users.IdUser, Users.Name, Users.Photo, dbo.UserGroup.Pending FROM dbo.Users INNER JOIN dbo.UserGroup ON UserGroup.IdUser = Users.IdUser WHERE IdGroup = @IdGroup; ";
+                        command.Parameters.AddWithValue("@IdGroup", group.IdGroup);
+                        command.CommandText = sql;
+                        command.ExecuteNonQuery();
+
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            UsersInfo.Add(new User
+                            {
+                                IdUser = new Guid(reader["IdUser"].ToString()),
+                                Name = reader["Name"].ToString(),
+                                Photo = reader["Photo"].ToString(),
+                                Pending = Convert.ToInt32(reader["Pending"].ToString())
+                            });
+
+                        }
+                    }
+
+
+
+
+                }
+                return req.CreateResponse(HttpStatusCode.OK, UsersInfo);
+
             }
             catch (Exception ex)
             {

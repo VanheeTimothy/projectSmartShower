@@ -27,7 +27,8 @@ namespace SmartShowerFunctions.Model
         public bool Monitor { get; set; }
         [JsonProperty("photo")]
         public string Photo { get; set; }
-
+        [JsonProperty("pending")]
+        public int Pending { get; set; }
 
     }
 }
