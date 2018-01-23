@@ -680,13 +680,99 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         }
                     }
 
-
-
-
                 }
                 return req.CreateResponse(HttpStatusCode.OK, UsersInfo);
 
             }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
+        [FunctionName("GetRankingFromShower")]
+        public static async Task<HttpResponseMessage> GetRankingFromShower([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Showers/GetRanking")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                List<Session> showerRanking = new List<Session>();
+                showerRanking.Capacity = 999;
+                var content = await req.Content.ReadAsStringAsync();
+                var session = JsonConvert.DeserializeObject<Session>(content);
+                var shower = JsonConvert.DeserializeObject<UserShower>(content);
+                int days = 0;
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+
+
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        switch (session.DataLenght)
+                        {
+
+                            case 0:
+                                days = 0;
+                                break;
+                            case 1:
+                                days = -7;
+                                break;
+                            case 2:
+                                days = -30;
+                                break;
+                        }
+                        string sql = "SELECT dbo.Session.IdSession, dbo.Session.IdUser, dbo.Session.WaterUsed, dbo.Session.MoneySaved, dbo.Session.EcoScore, dbo.Session.AverageTemp, dbo.Session.Duration, dbo.Session.Timestamp FROM dbo.Session JOIN dbo.UserShower on UserShower.IdUser = Session.IdUser JOIN dbo.Shower on shower.IdShower = dbo.UserShower.IdShower WHERE dbo.UserShower.IdShower IN(SELECT dbo.UserShower.IdShower FROM dbo.UserShower WHERE IdShower = @IdShower) AND dbo.Session.Timestamp >= DATEADD(DAY, @Days, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY IdSession; ";
+                        command.Connection = connection;
+                        command.Parameters.AddWithValue("@Days", days);
+                        command.Parameters.AddWithValue("@IdShower", shower.IdShower);
+                        command.CommandText = sql;
+
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            showerRanking.Add(new Session
+                            {
+
+                                IdUser = new Guid(reader["IdUser"].ToString()),
+                                IdSession = new Guid(reader["IdSession"].ToString()),
+                                WaterUsed = float.Parse(reader["WaterUsed"].ToString()),
+                                MoneySaved = float.Parse(reader["MoneySaved"].ToString()),
+                                EcoScore = float.Parse(reader["EcoScore"].ToString()),
+                                AverageTemp = float.Parse(reader["AverageTemp"].ToString()),
+                                Duration = TimeSpan.Parse(reader["Duration"].ToString()),
+                                Timestamp = Convert.ToDateTime(reader["Timestamp"]),
+
+                            });
+                        }
+
+                    }
+
+                }
+
+                Session result = new Session();
+              
+
+                    foreach (Session se in showerRanking)
+                    {
+                        result.WaterUsed += se.WaterUsed;
+                        result.MoneySaved += se.MoneySaved;
+                        result.EcoScore += se.EcoScore;
+                        result.Duration += se.Duration;
+                        result.AverageTemp += se.AverageTemp * (float)se.Duration.TotalSeconds;
+                    }
+                    result.AverageTemp = result.AverageTemp / (float)result.Duration.TotalSeconds;
+       
+              
+                return req.CreateResponse(HttpStatusCode.OK, result);
+
+            }
+
+
             catch (Exception ex)
             {
 #if RELEASE
