@@ -217,9 +217,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
                         command.Parameters.AddWithValue("@password", User.Password);
-                        command.ExecuteNonQuery();
-
-
+                        command.ExecuteNonQuery();                                           
                         DataSet ds = new DataSet();
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
