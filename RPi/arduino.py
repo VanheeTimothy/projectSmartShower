@@ -51,6 +51,7 @@ async def calculateData(sessionid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/calculateSession/{0}".format(guid)
     response = requests.get(url)
     print(response.status_code)
+    print(response)
     if (response.status_code == 200):
         GPIO.output(RGB, GPIO.LOW)
         GPIO.output(RGB[1], GPIO.HIGH)  # Blue when data is succesful transmitted
