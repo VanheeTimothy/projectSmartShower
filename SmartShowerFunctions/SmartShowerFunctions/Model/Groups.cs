@@ -15,5 +15,6 @@ namespace SmartShowerFunctions.Model
         public string Name { get; set; }
         [JsonProperty("photo")]
         public string Photo { get; set; }
+
     }
 }

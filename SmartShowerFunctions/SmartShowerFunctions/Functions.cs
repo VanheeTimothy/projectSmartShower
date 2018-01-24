@@ -835,19 +835,36 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 List<GroupSessions> FriendsWithSessionData = new List<GroupSessions>();
                 var content = await req.Content.ReadAsStringAsync();
                 var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                var session = JsonConvert.DeserializeObject<Session>(content);
+                int days = 0;
                 using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand())
                     {
+                        switch (session.DataLenght)
+                        {
+                            case 0:
+                                days = 0;
+                                break;
+                            case 1:
+                                days = -7;
+                                break;
+                            case 3:
+                                days = -30;
+                                break;
+                        }
                         command.Connection = connection;
                         string sql = "";
                         switch (group.WithSessionData) //property van de klasse UserGroup >> zit niet in de database. 
                         {
                             case true:
-                                sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser ORDER BY UserIdTable.IdUser;";
+                                // sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser ORDER BY UserIdTable.IdUser;";
+                                sql = "SELECT DISTINCT UserIdTable.[IdUser], Users.[Name], Users.[Photo], Sessions.WaterUsed, Sessions.MoneySaved, Sessions.EcoScore, Sessions.AverageTemp, Sessions.Duration, Sessions.Timestamp FROM[dbo].[UserGroup] AS UserIdTable INNER JOIN[dbo].[UserGroup] AS GroupIdTable ON GroupIdTable.[IdGroup] = UserIdTable.[IdGroup] and GroupIdTable.[IdUser] = @IdUser INNER JOIN [dbo].[Users] as Users ON Users.[IdUser] = UserIdTable.[IdUser] INNER JOIN dbo.Session AS Sessions ON Sessions.IdUser = Users.IdUser WHERE Sessions.Timestamp >= DATEADD(DAY, @Days, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Sessions.Timestamp < DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) ORDER BY UserIdTable.IdUser; ";
                                 command.CommandText = sql;
                                 command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                                command.Parameters.AddWithValue("@Days", days);
+
                                 SqlDataReader reader = command.ExecuteReader();
                                 while (reader.Read())
                                 {
