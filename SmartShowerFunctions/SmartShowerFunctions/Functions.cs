@@ -212,7 +212,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     {
                         command.Connection = connection;
 
-                        string sql = "SELECT dbo.Users.Name, users.Email, users.Color, users.MaxShowerTime,users.IdealTemperature, users.Monitor, users.Photo, dbo.Shower.IdShower, dbo.Shower.WaterCost  FROM dbo.Users INNER JOIN dbo.UserShower ON UserShower.IdUser = Users.IdUser INNER JOIN dbo.Shower ON Shower.IdShower = UserShower.IdShower where dbo.Users.Email = @Email and dbo.Users.Password = @password";
+                        string sql = "SELECT dbo.Users.IdUser, dbo.Users.Name, users.Email, users.Color, users.MaxShowerTime,users.IdealTemperature, users.Monitor, users.Photo, dbo.Shower.IdShower, dbo.Shower.WaterCost  FROM dbo.Users INNER JOIN dbo.UserShower ON UserShower.IdUser = Users.IdUser INNER JOIN dbo.Shower ON Shower.IdShower = UserShower.IdShower where dbo.Users.Email = @Email and dbo.Users.Password = @password";
                     
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
