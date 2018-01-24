@@ -20,7 +20,7 @@ namespace SmartShowerFunctions.Model
         [JsonProperty("temp")]
         public float Temp { get; set; }
         [JsonProperty("waterusage")]
-        public int WaterUsage { get; set; }
+        public float WaterUsage { get; set; }
         [JsonProperty("timestamp")]
         public DateTime Timestamp { get; set; }
 
