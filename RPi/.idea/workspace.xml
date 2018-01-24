@@ -10,7 +10,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/RPi$arduino.coverage" NAME="arduino Coverage Results" MODIFIED="1516565457332" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/RPi$arduino.coverage" NAME="arduino Coverage Results" MODIFIED="1516812800213" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/RPi$seria_test.coverage" NAME="seria_test Coverage Results" MODIFIED="1516020606707" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
@@ -18,8 +18,8 @@
       <file leaf-file-name="arduino.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/arduino.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-542">
-              <caret line="47" column="28" lean-forward="true" selection-start-line="47" selection-start-column="28" selection-end-line="47" selection-end-column="28" />
+            <state relative-caret-position="382">
+              <caret line="40" column="32" lean-forward="true" selection-start-line="40" selection-start-column="32" selection-end-line="40" selection-end-column="32" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -30,8 +30,8 @@
       <file leaf-file-name="serial_test2.ino" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/serial_test2/serial_test2.ino">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
-              <caret line="9" column="21" lean-forward="false" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="21" />
+            <state relative-caret-position="966">
+              <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -74,7 +74,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds">
     <option name="x" value="952" />
     <option name="width" value="976" />
     <option name="height" value="1038" />
@@ -197,17 +197,17 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="-9" width="1938" height="1048" extended-state="7" />
+    <frame x="952" y="0" width="976" height="1038" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3289183" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289183" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3289183" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3325893" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1109375" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11064718" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -235,6 +235,32 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/arduino.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/serial_test2/serial_test2.ino">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="9" column="21" lean-forward="false" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/remote_sources/1379152088/201545290/json/decoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7434">
+          <caret line="356" column="0" lean-forward="false" selection-start-line="356" selection-start-column="0" selection-end-line="356" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/arduino.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -396,30 +422,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/remote_sources/1379152088/-1171821208/urllib3/connection.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2667">
-          <caret line="137" column="0" lean-forward="false" selection-start-line="137" selection-start-column="0" selection-end-line="137" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/seria_test.py" />
     <entry file="file://$PROJECT_DIR$/serial_test2/serial_test2.ino">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="9" column="21" lean-forward="false" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="21" />
+        <state relative-caret-position="966">
+          <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/arduino.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-542">
-          <caret line="47" column="28" lean-forward="true" selection-start-line="47" selection-start-column="28" selection-end-line="47" selection-end-column="28" />
+        <state relative-caret-position="382">
+          <caret line="40" column="32" lean-forward="true" selection-start-line="40" selection-start-column="32" selection-end-line="40" selection-end-column="32" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/remote_sources/1379152088/-1171821208/urllib3/connection.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2667">
+          <caret line="137" column="0" lean-forward="false" selection-start-line="137" selection-start-column="0" selection-end-line="137" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

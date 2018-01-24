@@ -2,14 +2,12 @@
 #include <iostream>
 #include <Rotary.h>
 
-//#include <map>
-
 //variabelen Rotary Encode
 Rotary r = Rotary(2, 3);
 float startTemp = 35;
 float huidigeTemp;
-float ledTempStand;
-
+float kleur;
+float sterkte;
 // variabelen potentiometer Kleur selecteren
 int potKleur = A5;
 int kleurWaarde;
@@ -32,7 +30,6 @@ unsigned long tweedeKansTimer;
 // variabelen leds
 int ledStrip = 6;
 int ledWater = 5;
-float ledWaterStand;
 
 int profielKleuren[7][3] = {
   {255, 0, 0}, //red
@@ -83,8 +80,7 @@ ISR(PCINT2_vect) {
     magAfkoelen = false; // indien men manueel de temperatuur instelt zal het timer
     tweedeKans = true;
     tweedeKansTimer = timer;
-    ledTempStand ++;
-    ledWaterStand --;
+
   }
   else if (result == DIR_CCW) {
     Serial.println("CounterClockWise");
@@ -92,19 +88,18 @@ ISR(PCINT2_vect) {
     magAfkoelen = false;
     tweedeKans = true;
     tweedeKansTimer = timer;
-    ledTempStand --;
-    ledWaterStand ++;
+
 
   }
 }
 
 
-void contoleLedStand(){
-  if(ledTempStand >= 255){
-    ledTempStand = 255;
+void contoleTempStand() {
+  if (huidigeTemp > 49) {
+    huidigeTemp = 49;
   }
-  else if(ledTempStand <= 0){
-    ledTempStand = 0;
+  else if (huidigeTemp < 16) {
+    huidigeTemp = 16;
   }
 }
 
@@ -124,53 +119,57 @@ void profielLed()
 }
 
 void loop() {
-  contoleLedStand();
+  delay(1000);
   timer = millis();
   waterVerbruik = analogRead(potWater);
   literPerSeconde = map(waterVerbruik, 0, 1023, 0, 25);
-  ledWaterStand = map(waterVerbruik, 0, 1023, 0, 255);
+  sterkte = map(waterVerbruik, 0, 1023, 0, 255);
   literPerSeconde = literPerSeconde / 100;
-  ledTempStand = map(huidigeTemp, 15,60,0,255);
+  kleur = map(huidigeTemp, 15, 50, 0, sterkte);
   //Serial.println("waterverbruik: " + String(waterVerbruik));
   if (waterVerbruik > 10) // waterKraan is open
   {
-      Serial.println("ledtempstand: " + String(ledTempStand));
-      Serial.println("ledWaterStand: " + String(ledWaterStand));
+    Serial.println(String(idShower)+" "+String(gekozenProfiel + 1)+" "+String(huidigeTemp)+" "+ String(literPerSeconde));
+   // Serial.println("kleur: " + String(kleur));
+    //Serial.println("sterkte: " + String(sterkte));
 
 
     for (uint16_t i = 0; i < LED_COUNT_TEMP; i++)
     {
-      colorTemp[i] = rgb_color(ledTempStand, 0, ledWaterStand);
+      colorTemp[i] = rgb_color(kleur, 0, sterkte - kleur);
     }
+    contoleTempStand();
     tempLed.write(colorTemp, LED_COUNT_TEMP);
 
-    Serial.println("duration: " + String(timer));
-    Serial.println("Douche sessie begonnen ");
-    Serial.println("het profielnummer die nu aan het douchen is: " + String(gekozenProfiel));
-    Serial.println("literPerSeconde: " + String(literPerSeconde));
-    Serial.println("De voorlopige Temperatuur: " + String(huidigeTemp));
+   // Serial.println("duration: " + String(timer));
+   // Serial.println("Douche sessie begonnen ");
+   // Serial.println("het profielnummer die nu aan het douchen is: " + String(gekozenProfiel));
+    //Serial.println("literPerSeconde: " + String(literPerSeconde));
+   // Serial.println("De voorlopige Temperatuur: " + String(huidigeTemp));
     if (session == false) {
       startTimer = timer;
       magAfkoelen = true;
       huidigeTemp = startTemp;
-      Serial.println(startTimer);
+   //   Serial.println(startTimer);
     }
-    Serial.println("Actual millis: " + String(timer));
-    Serial.println("startTimeShower: " + String(startTimer));
+  //  Serial.println("Actual millis: " + String(timer));
+  //  Serial.println("startTimeShower: " + String(startTimer));
     if ((timer > (startTimer + 9000) && magAfkoelen == true) || (timer > (tweedeKansTimer + 9000) && tweedeKans == true)) // TIJD NOG AANPASSEN!!!!!!!!!!!!!!!!!
     {
       afkoelen = true;
-      ledTempStand++;
     }
     else {
       afkoelen = false;
     }
     if (afkoelen) {
       huidigeTemp -= 0.25;
+
     }
     session = true;
   }
   else {
+    Serial.println("false");
+
     timer = 0;
     session = false;
     afkoelen = false;
@@ -185,4 +184,5 @@ void loop() {
     profielLed();
 
   }
+
 }

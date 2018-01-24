@@ -34,7 +34,7 @@ guid = uuid.uuid4()
 async def TransmitData(parts, guid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/AddSession"
     data = {"idsession": str(guid), "idshower": parts[0], "profilenumber": int(parts[1]),
-            "tijdfase": int(parts[2]), "temp": float(parts[3]), "waterusage": int(parts[4]),
+            "temp": float(parts[2]), "waterusage": float(parts[3]),
             "timestamp": str(datetime.datetime.now())}
     jsondata = json.dumps(data)
     print("\n"+jsondata)
@@ -42,6 +42,7 @@ async def TransmitData(parts, guid):
     GPIO.output(RGB[2], GPIO.LOW)
     time.sleep(0.05)
     GPIO.output(RGB[2], GPIO.HIGH)
+    print("sessie is verzonden")
 
 
 async def calculateData(sessionid):
@@ -63,9 +64,9 @@ async def main(isRunning, guid):
             #TransmitData()
             line = ser.readline()  # read a '\n' terminated line
             session = line.decode().strip('\r\n')
+            print(session)
             parts = session.split()
-            if (len(parts) == 5 and len(str(guid)) == 36 and len(
-                    str(parts[0])) == 36):  # indien de lijst korter/langer is >> data corupted!
+            if (len(parts) == 4 and len(str(guid)) == 36 and len(str(parts[0])) == 36):  # indien de lijst korter/langer is >> data corupted!
                 await TransmitData(parts, guid)
                 isRunning = True
 

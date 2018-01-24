@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SmartShowerFunctions.Model
 {
-    class SessionCosmosDb
+    public class SessionCosmosDb
     {
         [JsonProperty("idsession")]
         public Guid IdSession { get; set; }
@@ -15,8 +15,8 @@ namespace SmartShowerFunctions.Model
         public Guid IdShower { get; set; }
         [JsonProperty("profilenumber")]
         public int ProfileNumber { get; set; }
-        [JsonProperty("tijdfase")]
-        public int TijdFase { get; set; }
+        //[JsonProperty("tijdfase")]
+        //public int TijdFase { get; set; }
         [JsonProperty("temp")]
         public float Temp { get; set; }
         [JsonProperty("waterusage")]
