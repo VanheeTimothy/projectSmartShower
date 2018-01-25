@@ -819,6 +819,53 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
         }
 
+        [FunctionName("GetAllInvitesFromUser")]
+        public static async Task<HttpResponseMessage> GetAllInvitesFromUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetAllInvitesFromUser")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                List<Groups> GroupInfo = new List<Groups>();
+                var content = await req.Content.ReadAsStringAsync();
+                var group = JsonConvert.DeserializeObject<UserGroup>(content);
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "SELECT Groups.IdGroup, Name, Photo FROM dbo.Groups INNER JOIN UserGroup ON Groups.IdGroup = dbo.UserGroup.IdGroup WHERE IdUser = @IdUser AND dbo.UserGroup.Pending = 1;";
+                        command.CommandText = sql;
+                        command.Parameters.AddWithValue("@IdUser", group.IdUser);
+                        SqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            GroupInfo.Add(new Groups()
+                            {
+                                IdGroup = new Guid(reader["IdGroup"].ToString()),
+                                Name = reader["Name"].ToString(),
+                                Photo = reader["Photo"].ToString()
+
+                            });
+
+
+                        }
+                    }
+
+                }
+                return req.CreateResponse(HttpStatusCode.OK, GroupInfo);
+
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
+
         [FunctionName("GetAllFriendsFromUser")]
         public static async Task<HttpResponseMessage> GetAllFriendsFromUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetAllFriendsFromUser")]HttpRequestMessage req, TraceWriter log)
         {
@@ -1160,123 +1207,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #endif
             }
         }
-
-        //        [FunctionName("GetFriendsScores")]
-        //        public static async Task<HttpResponseMessage> GetScore([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetFriendsScores")]HttpRequestMessage req, TraceWriter log)
-        //        {
-        //            try
-        //            {
-        //                List<Session> sessions = new List<Session>();
-        //                var content = await req.Content.ReadAsStringAsync();
-        //                var session = JsonConvert.DeserializeObject<Session>(content);
-
-        //                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
-        //                {
-        //                    connection.Open();
-        //                    using (SqlCommand command = new SqlCommand())
-        //                    {
-        //                        command.Connection = connection;
-        //                        string sql = "SELECT IdSession, IdUser, WaterUsed, MoneySaved, EcoScore, AverageTemp, Duration, Timestamp FROM Session WHERE IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
-
-        //                        switch (session.DataLenght)
-        //                        {
-        //                            case 0:
-        //                                sql = "SELECT * FROM Session JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE Session.IdUser = @IdUser AND Timestamp >= DATEADD(DAY, 0, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
-        //                                break;
-        //                            case 1:
-        //                                sql = "SELECT * FROM Session JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE Session.IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -7, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
-        //                                break;
-        //                            case 2:
-        //                                sql = "SELECT * FROM Session JOIN dbo.Users on Users.IdUser = Session.IdUser WHERE Session.IdUser = @IdUser AND TIMESTAMP >= DATEADD(DAY, -30, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP)) AND Timestamp <  DATEADD(DAY, 1, DATEDIFF(DAY, 0, CURRENT_TIMESTAMP));";
-        //                                break;
-        //                        }
-        //                        command.Parameters.AddWithValue("@IdUser", session.IdUser);
-        //                        command.CommandText = sql;
-        //                        SqlDataReader reader = command.ExecuteReader();
-        //                        while (reader.Read())
-        //                        {
-        //                            sessions.Add(new Session
-        //                            {
-        //                                IdSession = new Guid(reader["IdSession"].ToString()),
-        //                                IdUser = new Guid(reader["IdUser"].ToString()),
-        //                                Name = reader["Name"].ToString(),
-        //                                Email = reader["Email"].ToString(),
-        //                                Color = Convert.ToInt32(session.Color),
-        //                                Photo = reader["Photo"].ToString(),
-        //                                WaterUsed = float.Parse(reader["WaterUsed"].ToString()),
-        //                                MoneySaved = float.Parse(reader["MoneySaved"].ToString()),
-        //                                EcoScore = float.Parse(reader["EcoScore"].ToString()),
-        //                                AverageTemp = float.Parse(reader["AverageTemp"].ToString()),
-        //                                Duration = TimeSpan.Parse(reader["Duration"].ToString()),
-        //                                Timestamp = Convert.ToDateTime(reader["Timestamp"]),
-        //                                DataLenght = Convert.ToInt32(session.DataLenght)
-
-        //                            });
-        //                        }
-        //                    }
-
-        //                    Session result = new Session();
-        //                    List<Session> results = new List<Session>();
-
-        //                    Guid OldId = new Guid();
-        //                    Guid IsUser = new Guid();
-        //                    List<Session> DataForEachFriend = new List<Session>();
-
-        //                    for (int i = 0; i < sessions.Count; i++)
-        //                    {
-        //                        IsUser = sessions[i].IdUser;
-        //                        if (i > 0)
-        //                        {
-        //                            OldId = sessions[i - 1].IdUser;
-        //                        }
-        //                        else
-        //                        {
-        //                            OldId = IsUser;
-        //                        }
-
-        //                        if (IsUser == OldId)
-        //                        {
-        //                            DataForEachFriend.Add(sessions[i]);
-        //                        }
-
-        //                        if (IsUser != OldId || (i + 1) >= sessions.Count)
-        //                        {
-        //                            result.IdUser = DataForEachFriend[0].IdUser;
-        //                            foreach (Session se in DataForEachFriend)
-        //                            {
-        //                                result.WaterUsed += se.WaterUsed;
-        //                                result.MoneySaved += se.MoneySaved;
-        //                                result.EcoScore += se.EcoScore;
-        //                                result.Duration += se.Duration;
-
-        //                                Debug.WriteLine(se.Duration);
-        //                                Debug.WriteLine(result.Duration);
-
-        //                                result.AverageTemp += se.AverageTemp * (float)se.Duration.TotalSeconds;
-        //                            }
-        //                            result.AverageTemp = result.AverageTemp / (float)result.Duration.TotalSeconds;
-
-        //                            results.Add(result);
-
-        //                            result = new Session();
-        //                            DataForEachFriend.Clear();
-        //                            DataForEachFriend.Add(sessions[i]);
-        //                        }
-        //                    }
-
-        //                    return req.CreateResponse(HttpStatusCode.OK, results);
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //#if RELEASE
-        //                return req.CreateResponse(HttpStatusCode.InternalServerError);
-        //#endif
-        //#if DEBUG
-        //                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
-        //#endif
-        //            }
-        //        }
 
         [FunctionName("AddSessionToCosmosDb")]
         public static async Task<HttpResponseMessage> AddSessionToCosmosDb([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/AddSession")]HttpRequestMessage req, TraceWriter log)
