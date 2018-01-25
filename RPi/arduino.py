@@ -32,9 +32,11 @@ guid = uuid.uuid4()
 
 possibleColors = [1,2,3,4,5,6,7]
 
+idShower = "F1E5FB65-42B1-04EB-7D17-11D1BFB2E008" #idshower is hardcoded and unique
+
 async def TransmitData(parts, guid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/AddSession"
-    data = {"idsession": str(guid), "idshower": parts[0], "profilenumber": int(parts[1]),
+    data = {"idsession": str(guid), "idshower": idShower, "profilenumber": int(parts[1]),
             "temp": float(parts[2]), "waterusage": float(parts[3]),
             "timestamp": str(datetime.datetime.now())}
     jsondata = json.dumps(data)

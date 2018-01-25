@@ -843,7 +843,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             case 1:
                                 days = -7;
                                 break;
-                            case 3:
+                            case 2:
                                 days = -30;
                                 break;
                         }
