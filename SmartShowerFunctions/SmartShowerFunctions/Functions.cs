@@ -1344,7 +1344,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 List<SessionCosmosDb> sessionData = JsonConvert.DeserializeObject<List<SessionCosmosDb>>(result);
                 float averageTemp = new float();
                 float waterUsed = new float();
-                TimeSpan duration = sessionData[sessionData.Count - 1].Timestamp - sessionData[0].Timestamp;
+                TimeSpan duration = TimeSpan.FromSeconds(sessionData.Count());
+                Debug.WriteLine(duration.ToString());
                 foreach (SessionCosmosDb se in sessionData)
                 {
                     averageTemp += se.Temp;

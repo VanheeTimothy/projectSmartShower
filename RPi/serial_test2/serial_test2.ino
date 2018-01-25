@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Rotary.h>
 
+
 //variabelen Rotary Encode
 Rotary r = Rotary(2, 3);
 float startTemp = 35;
@@ -105,9 +106,7 @@ void profielLed()
   }
   selectieRing.write(colorRing, LED_COUNT_RING);
 }
-
 void loop() {
-
   timer = millis();
   waterVerbruik = analogRead(potWater);
   literPerSeconde = map(waterVerbruik, 0, 1023, 0, 25);
@@ -116,7 +115,6 @@ void loop() {
   kleur = map(huidigeTemp, 15, 55, 0, sterkte);
   if (waterVerbruik > 10) // waterKraan is open
   {
-
     Serial.println(String(idShower) + " " + String(gekozenProfiel + 1) + " " + String(huidigeTemp) + " " + String(literPerSeconde));
     for (uint16_t i = 0; i < LED_COUNT_TEMP; i++)
     {
@@ -140,7 +138,7 @@ void loop() {
 
     }
     session = true;
-    delay(1500);
+    delay(1000);
   }
   else {
     Serial.println("false");
@@ -155,8 +153,5 @@ void loop() {
     }
     tempLed.write(colorTemp, LED_COUNT_TEMP);
     profielLed();
-    // huidigeTemp = startTemp;
-
   }
-
 }

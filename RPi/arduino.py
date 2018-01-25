@@ -38,7 +38,7 @@ async def TransmitData(parts, guid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/AddSession"
     data = {"idsession": str(guid), "idshower": idShower, "profilenumber": int(parts[1]),
             "temp": float(parts[2]), "waterusage": float(parts[3]),
-            "timestamp": str(datetime.datetime.now())}
+            "timestamp": datetime.datetime.now()}
     jsondata = json.dumps(data)
     print("\n"+jsondata)
     requests.post(url, data=jsondata)
@@ -52,16 +52,18 @@ def getColors(guid):
     data = {"idshower": str(guid)}
     jsondata = json.dumps(data)
     result = requests.post(url, data=jsondata)
-    for color in result:
-        possibleColors.remove(color)
+    try:
+        for color in result.json():
+            possibleColors.remove(color)
+    except Exception as e:
+        print(e)
     return possibleColors
-
 
 
 async def calculateData(sessionid):
     print("\nSession ended")
     print("Calculating session")
-    url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/calculateSession/{0}".format(guid)
+    url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/calculateSession/{0}".format(sessionid)
     response = requests.get(url)
     print(response.status_code)
     if (response.status_code == 200):
@@ -72,15 +74,20 @@ async def calculateData(sessionid):
 
 
 async def main(isRunning, guid):
+    getColors(idShower)
     while 1:
         try:
             #TransmitData()
             line = ser.readline()  # read a '\n' terminated line
-            session = line.decode().strip('\r\n')
+            session = line.decode('utf8').strip('\r\n')
             parts = session.split()
-            if (len(parts) == 4 and len(str(guid)) == 36 and len(str(parts[0])) == 36):  # indien de lijst korter/langer is >> data corupted!
-                await TransmitData(parts, guid)
-                isRunning = True
+            if (len(parts) == 4 and len(str(guid)) == 36):  # indien de lijst korter/langer is >> data corupted!
+                if(int(parts[1]) in possibleColors): #kleur moet toegewezen zijn aan een gebruiker
+                    await TransmitData(parts, guid)
+                    isRunning = True
+                else:
+                    print("No user selected")
+                    print("Data will not be stored.")
             elif (session == "false"):
                 GPIO.output(RGB, GPIO.LOW)
                 GPIO.output(RGB[2], GPIO.HIGH)
@@ -96,8 +103,8 @@ async def main(isRunning, guid):
             print("##########")
             print(ex)
             print("##########")
-            with open("error.txt", "a") as f:
-                f.write("Failed to decode: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
+            # with open("error.txt", "a") as f:
+            #     f.write("Failed to decode: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
             GPIO.output(RGB[2], GPIO.LOW)
             GPIO.output(RGB[:2], GPIO.HIGH)  # Magneta when UnicodeDecodeError occur
             time.sleep(1)
@@ -105,8 +112,8 @@ async def main(isRunning, guid):
             print("##########")
             print(ex)
             print("##########")
-            with open("error.txt", "a") as f:
-                f.write("An error has occurd: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
+            # with open("error.txt", "a") as f:
+            #     f.write("An error has occurd: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
             GPIO.output(RGB[0], GPIO.HIGH) # red on Error
             GPIO.output(RGB[1:], GPIO.LOW)
             time.sleep(1)
