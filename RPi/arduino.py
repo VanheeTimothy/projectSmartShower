@@ -38,7 +38,7 @@ async def TransmitData(parts, guid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/AddSession"
     data = {"idsession": str(guid), "idshower": idShower, "profilenumber": int(parts[1]),
             "temp": float(parts[2]), "waterusage": float(parts[3]),
-            "timestamp": datetime.datetime.now()}
+            "timestamp": str(datetime.datetime.now())}
     jsondata = json.dumps(data)
     print("\n"+jsondata)
     requests.post(url, data=jsondata)
@@ -103,8 +103,8 @@ async def main(isRunning, guid):
             print("##########")
             print(ex)
             print("##########")
-            # with open("error.txt", "a") as f:
-            #     f.write("Failed to decode: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
+            with open("error.txt", "a") as f:
+                f.write("Failed to decode: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
             GPIO.output(RGB[2], GPIO.LOW)
             GPIO.output(RGB[:2], GPIO.HIGH)  # Magneta when UnicodeDecodeError occur
             time.sleep(1)
@@ -112,8 +112,8 @@ async def main(isRunning, guid):
             print("##########")
             print(ex)
             print("##########")
-            # with open("error.txt", "a") as f:
-            #     f.write("An error has occurd: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
+            with open("error.txt", "a") as f:
+                f.write("An error has occurd: {0} \ton {1}\n".format(str(ex), str(datetime.datetime.now())))
             GPIO.output(RGB[0], GPIO.HIGH) # red on Error
             GPIO.output(RGB[1:], GPIO.LOW)
             time.sleep(1)
