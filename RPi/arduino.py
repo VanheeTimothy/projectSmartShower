@@ -36,8 +36,8 @@ idShower = "F1E5FB65-42B1-04EB-7D17-11D1BFB2E008" #idshower is hardcoded and uni
 
 async def TransmitData(parts, guid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/AddSession"
-    data = {"idsession": str(guid), "idshower": idShower, "profilenumber": int(parts[1]),
-            "temp": float(parts[2]), "waterusage": float(parts[3]),
+    data = {"idsession": str(guid), "idshower": idShower, "profilenumber": int(parts[0]),
+            "temp": float(parts[1]), "waterusage": float(parts[2]),
             "timestamp": str(datetime.datetime.now())}
     jsondata = json.dumps(data)
     print("\n"+jsondata)
@@ -81,8 +81,8 @@ async def main(isRunning, guid):
             line = ser.readline()  # read a '\n' terminated line
             session = line.decode('utf8').strip('\r\n')
             parts = session.split()
-            if (len(parts) == 4 and len(str(guid)) == 36):  # indien de lijst korter/langer is >> data corupted!
-                if(int(parts[1]) in possibleColors): #kleur moet toegewezen zijn aan een gebruiker
+            if (len(parts) == 3 and len(str(guid)) == 36):  # indien de lijst korter/langer is >> data corupted!
+                if(int(parts[0]) in possibleColors): #kleur moet toegewezen zijn aan een gebruiker
                     await TransmitData(parts, guid)
                     isRunning = True
                 else:

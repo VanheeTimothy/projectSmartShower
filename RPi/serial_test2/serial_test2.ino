@@ -24,6 +24,7 @@ bool magAfkoelen;
 bool tweedeKans;
 
 bool session;
+bool msgSend;
 unsigned long timer;
 unsigned long startTimer;
 unsigned long tweedeKansTimer;
@@ -34,7 +35,7 @@ int ledWater = 5;
 
 int profielKleuren[7][3] = {
   {255, 0, 0}, //red
-  {255, 165, 0}, // orange
+  {255, 165, 0}, // yellow
   {0, 255, 0}, // green
   {0, 255, 255}, // cyan
   {0, 0, 255}, // blue
@@ -42,11 +43,6 @@ int profielKleuren[7][3] = {
   {255, 255, 255} // white
 };
 
-
-
-String idShower = "F1E5FB65-42B1-04EB-7D17-11D1BFB2E008";
-
-// using namespace std;
 void setup() {
   PCICR |= (1 << PCIE2);
   PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
@@ -115,7 +111,8 @@ void loop() {
   kleur = map(huidigeTemp, 15, 55, 0, sterkte);
   if (waterVerbruik > 10) // waterKraan is open
   {
-    Serial.println(String(idShower) + " " + String(gekozenProfiel + 1) + " " + String(huidigeTemp) + " " + String(literPerSeconde));
+    msgSend = true;
+    Serial.println(String(gekozenProfiel + 1) + " " + String(huidigeTemp) + " " + String(literPerSeconde));
     for (uint16_t i = 0; i < LED_COUNT_TEMP; i++)
     {
       colorTemp[i] = rgb_color(kleur, 0, sterkte - kleur);
@@ -133,7 +130,7 @@ void loop() {
     else {
       afkoelen = false;
     }
-    if (afkoelen) {
+    if (afkoelen && huidigeTemp > 15) {
       huidigeTemp -= 0.25;
 
     }
@@ -141,7 +138,11 @@ void loop() {
     delay(1000);
   }
   else {
-    Serial.println("false");
+    if (msgSend) {
+      Serial.println("false");
+      msgSend = false;
+
+    }
 
     timer = 0;
     session = false;

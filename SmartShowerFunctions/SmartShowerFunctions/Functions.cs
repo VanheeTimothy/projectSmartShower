@@ -85,7 +85,42 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
 #endif
             }
-        }        
+        }
+
+        [FunctionName("DeleteUser")]
+        public static async Task<HttpResponseMessage> DeleteUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/User/delete")]HttpRequestMessage req, TraceWriter log)
+        {
+            try
+            {
+                var content = await req.Content.ReadAsStringAsync();
+                var user = JsonConvert.DeserializeObject<User>(content);
+                //Guid clientId = Guid.NewGuid(); // >> id wordt meegeven in de APP zelf
+
+
+                using (SqlConnection connection = new SqlConnection(CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        string sql = "DELETE dbo.UserGroup WHERE IdUser = @IdUser;DELETE dbo.UserShower WHERE IdUser = @IdUser; DELETE dbo.Session WHERE IdUser = @IdUser; DELETE dbo.Users WHERE IdUser = @IdUser; ";
+                        command.Parameters.AddWithValue("@IdUser", user.IdUser);
+                        command.CommandText = sql;
+                        command.ExecuteNonQuery();                       
+                    }
+                    return req.CreateResponse(HttpStatusCode.OK, true);
+                }
+            }
+            catch (Exception ex)
+            {
+#if RELEASE
+                return req.CreateResponse(HttpStatusCode.InternalServerError);
+#endif
+#if DEBUG
+                return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
+#endif
+            }
+        }
         [FunctionName("RegisterShower")]
         public static async Task<HttpResponseMessage> RegisterShower([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Shower/Reg")]HttpRequestMessage req, TraceWriter log)
         {
@@ -210,7 +245,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@Email", User.Email);
                         command.Parameters.AddWithValue("@password", User.Password);
-                        command.ExecuteNonQuery();                                           
                         DataSet ds = new DataSet();
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
@@ -1139,11 +1173,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
             }
 
         }
-
-
-
-
-
         [FunctionName("GetSessions")]
         public static async Task<HttpResponseMessage> GetSessions([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/GetSessions")]HttpRequestMessage req, TraceWriter log)
         {
@@ -1293,7 +1322,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@IdShower", sessionData[0].IdShower);
                         command.Parameters.AddWithValue("@Color", sessionData[0].ProfileNumber);
-                        command.ExecuteNonQuery();
                         DataSet ds = new DataSet();
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
