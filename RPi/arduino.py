@@ -30,6 +30,7 @@ GPIO.output(RGB[2], GPIO.HIGH)
 isRunning = False
 guid = uuid.uuid4()
 
+possibleColors = [1,2,3,4,5,6,7]
 
 async def TransmitData(parts, guid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/AddSession"
@@ -44,6 +45,16 @@ async def TransmitData(parts, guid):
     GPIO.output(RGB[2], GPIO.HIGH)
     print("sessie is verzonden")
 
+def getColors(guid):
+    url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/getAvailableColors"
+    data = {"idshower": str(guid)}
+    jsondata = json.dumps(data)
+    result = requests.post(url, data=jsondata)
+    for color in result:
+        possibleColors.remove(color)
+    return possibleColors
+
+
 
 async def calculateData(sessionid):
     print("\nSession ended")
@@ -51,7 +62,6 @@ async def calculateData(sessionid):
     url = "https://smartshowerfunctions.azurewebsites.net/api/SmartShower/calculateSession/{0}".format(guid)
     response = requests.get(url)
     print(response.status_code)
-    print(response)
     if (response.status_code == 200):
         GPIO.output(RGB, GPIO.LOW)
         GPIO.output(RGB[1], GPIO.HIGH)  # Blue when data is succesful transmitted
@@ -65,13 +75,10 @@ async def main(isRunning, guid):
             #TransmitData()
             line = ser.readline()  # read a '\n' terminated line
             session = line.decode().strip('\r\n')
-            print(session)
             parts = session.split()
             if (len(parts) == 4 and len(str(guid)) == 36 and len(str(parts[0])) == 36):  # indien de lijst korter/langer is >> data corupted!
                 await TransmitData(parts, guid)
                 isRunning = True
-
-
             elif (session == "false"):
                 GPIO.output(RGB, GPIO.LOW)
                 GPIO.output(RGB[2], GPIO.HIGH)
@@ -82,6 +89,7 @@ async def main(isRunning, guid):
                     GPIO.output(RGB, GPIO.LOW)
                     guid = uuid.uuid4()
                     isRunning = False
+
         except UnicodeDecodeError as ex:
             print("##########")
             print(ex)

@@ -57,12 +57,9 @@ void setup() {
 // LEDS
 #include <PololuLedStrip.h>
 
-// Which pin on the Arduino is connected to the NeoPixels?
-// Create an ledStrip object and specify the pin it will use.
 PololuLedStrip<6> selectieRing;
 PololuLedStrip<5> tempLed;
 
-// How many NeoPixels are attached to the Arduino?
 #define LED_COUNT_RING 5
 #define LED_COUNT_TEMP 60
 
@@ -76,30 +73,23 @@ ISR(PCINT2_vect) {
   }
   else if (result == DIR_CW) {
     Serial.println("ClockWise");
-    huidigeTemp += 0.25;
+    if (huidigeTemp  < 54) {
+      huidigeTemp += 0.25;
+    }
+
     magAfkoelen = false; // indien men manueel de temperatuur instelt zal het timer
     tweedeKans = true;
     tweedeKansTimer = timer;
-
   }
   else if (result == DIR_CCW) {
     Serial.println("CounterClockWise");
-    huidigeTemp -= 0.25;
+    if (huidigeTemp > 15) {
+      huidigeTemp -= 0.25;
+
+    }
     magAfkoelen = false;
     tweedeKans = true;
     tweedeKansTimer = timer;
-
-
-  }
-}
-
-
-void contoleTempStand() {
-  if (huidigeTemp > 49) {
-    huidigeTemp = 49;
-  }
-  else if (huidigeTemp < 16) {
-    huidigeTemp = 16;
   }
 }
 
@@ -107,8 +97,6 @@ void profielLed()
 {
   kleurWaarde = analogRead(potKleur); //Dit is een getal van 0 tot 1023
   gekozenProfiel = map(kleurWaarde, 0, 1023, 0, 7);
-  //Serial.println("kleurwaarde: " + String(kleurWaarde));
-  //Serial.println("selectie profiel: " + String(gekozenProfiel));
   for (uint16_t i = 0; i < LED_COUNT_RING; i++)
   {
     colorRing[i] = rgb_color(profielKleuren[gekozenProfiel][0],
@@ -119,41 +107,27 @@ void profielLed()
 }
 
 void loop() {
-  delay(1000);
+
   timer = millis();
   waterVerbruik = analogRead(potWater);
   literPerSeconde = map(waterVerbruik, 0, 1023, 0, 25);
   sterkte = map(waterVerbruik, 0, 1023, 0, 255);
   literPerSeconde = literPerSeconde / 100;
-  kleur = map(huidigeTemp, 15, 50, 0, sterkte);
-  //Serial.println("waterverbruik: " + String(waterVerbruik));
+  kleur = map(huidigeTemp, 15, 55, 0, sterkte);
   if (waterVerbruik > 10) // waterKraan is open
   {
-    Serial.println(String(idShower)+" "+String(gekozenProfiel + 1)+" "+String(huidigeTemp)+" "+ String(literPerSeconde));
-   // Serial.println("kleur: " + String(kleur));
-    //Serial.println("sterkte: " + String(sterkte));
 
-
+    Serial.println(String(idShower) + " " + String(gekozenProfiel + 1) + " " + String(huidigeTemp) + " " + String(literPerSeconde));
     for (uint16_t i = 0; i < LED_COUNT_TEMP; i++)
     {
       colorTemp[i] = rgb_color(kleur, 0, sterkte - kleur);
     }
-    contoleTempStand();
     tempLed.write(colorTemp, LED_COUNT_TEMP);
-
-   // Serial.println("duration: " + String(timer));
-   // Serial.println("Douche sessie begonnen ");
-   // Serial.println("het profielnummer die nu aan het douchen is: " + String(gekozenProfiel));
-    //Serial.println("literPerSeconde: " + String(literPerSeconde));
-   // Serial.println("De voorlopige Temperatuur: " + String(huidigeTemp));
     if (session == false) {
       startTimer = timer;
       magAfkoelen = true;
       huidigeTemp = startTemp;
-   //   Serial.println(startTimer);
     }
-  //  Serial.println("Actual millis: " + String(timer));
-  //  Serial.println("startTimeShower: " + String(startTimer));
     if ((timer > (startTimer + 9000) && magAfkoelen == true) || (timer > (tweedeKansTimer + 9000) && tweedeKans == true)) // TIJD NOG AANPASSEN!!!!!!!!!!!!!!!!!
     {
       afkoelen = true;
@@ -166,6 +140,7 @@ void loop() {
 
     }
     session = true;
+    delay(1500);
   }
   else {
     Serial.println("false");
@@ -178,10 +153,9 @@ void loop() {
     {
       colorTemp[i] = out;
     }
-
-    // Write to the LED strip.
     tempLed.write(colorTemp, LED_COUNT_TEMP);
     profielLed();
+    // huidigeTemp = startTemp;
 
   }
 

@@ -72,12 +72,9 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             command.Parameters.AddWithValue("@Photo", user.Photo);
                             command.ExecuteNonQuery();
                         }
-
-
                     }
                     return req.CreateResponse(HttpStatusCode.OK, true);
                 }
-
             }
             catch (Exception ex)
             {
@@ -88,9 +85,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 return req.CreateResponse(HttpStatusCode.InternalServerError, ex);
 #endif
             }
-        }
-
-
+        }        
         [FunctionName("RegisterShower")]
         public static async Task<HttpResponseMessage> RegisterShower([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/Shower/Reg")]HttpRequestMessage req, TraceWriter log)
         {
@@ -143,7 +138,6 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
 #endif
             }
         }
-
         [FunctionName("RegisterUserShower")]
         public static async Task<HttpResponseMessage> RegisterUserShower([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SmartShower/UserShower/Reg")]HttpRequestMessage req, TraceWriter log)
         {
@@ -178,8 +172,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             return req.CreateResponse(HttpStatusCode.NotFound);
 
                         }
-
-
+                        
                     }
                 }
                 return req.CreateResponse(HttpStatusCode.OK, UserShower);
