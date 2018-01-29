@@ -10,13 +10,13 @@ float huidigeTemp;
 float kleur;
 float sterkte;
 // variabelen potentiometer Kleur selecteren
-int potKleur = A5;
+int potKleur = A0 ;
 int kleurWaarde;
 int gekozenProfiel;
 int selectieProfiel;
 
 // variabelen potentiometer Water
-int potWater = A4;
+int potWater = A3;
 int waterVerbruik = 0;
 float literPerSeconde;
 bool afkoelen;
@@ -53,7 +53,6 @@ void setup() {
 
 // LEDS
 #include <PololuLedStrip.h>
-
 PololuLedStrip<6> selectieRing;
 PololuLedStrip<5> tempLed;
 
@@ -92,8 +91,10 @@ ISR(PCINT2_vect) {
 
 void profielLed()
 {
+
   kleurWaarde = analogRead(potKleur); //Dit is een getal van 0 tot 1023
-  gekozenProfiel = map(kleurWaarde, 0, 1023, 0, 7);
+  gekozenProfiel = map(kleurWaarde, 0, 1024, 0, 7); // normaal is 1023 maar door defect in potentiometer
+
   for (uint16_t i = 0; i < LED_COUNT_RING; i++)
   {
     colorRing[i] = rgb_color(profielKleuren[gekozenProfiel][0],
@@ -109,8 +110,9 @@ void loop() {
   sterkte = map(waterVerbruik, 0, 1023, 0, 255);
   literPerSeconde = literPerSeconde / 100;
   kleur = map(huidigeTemp, 15, 55, 0, sterkte);
-  if (waterVerbruik > 10) // waterKraan is open
+  if (waterVerbruik > 15) // waterKraan is open
   {
+
     msgSend = true;
     Serial.println(String(gekozenProfiel + 1) + " " + String(huidigeTemp) + " " + String(literPerSeconde));
     for (uint16_t i = 0; i < LED_COUNT_TEMP; i++)
