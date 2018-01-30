@@ -1301,14 +1301,16 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 string result = await client.GetStringAsync(url);
                 List<SessionCosmosDb> sessionData = JsonConvert.DeserializeObject<List<SessionCosmosDb>>(result);
+                decimal moneySaved = new decimal();
                 float averageTemp = new float();
                 float waterUsed = new float();
+                float ecoScore = new float();
                 TimeSpan duration = TimeSpan.FromSeconds(sessionData.Count());
                 Debug.WriteLine(duration.ToString());
                 foreach (SessionCosmosDb se in sessionData)
                 {
                     averageTemp += se.Temp;
-                    waterUsed += se.WaterUsage * 2;
+                    waterUsed += se.WaterUsage;
                 }
                 averageTemp = averageTemp / sessionData.Count();
 
@@ -1318,7 +1320,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                     using (SqlCommand command = new SqlCommand())
                     {
                         command.Connection = connection;
-                        string sql = "select Users.IdUser from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser WHERE IdShower = @IdShower AND Users.Color = @Color;";
+                        string sql = "select Users.IdUser, dbo.Shower.WaterCost from Users INNER JOIN UserShower ON Users.IdUser = UserShower.IdUser INNER JOIN dbo.Shower ON Shower.IdShower = UserShower.IdShower WHERE dbo.UserShower.IdShower = @IdShower AND Users.Color = @Color; ";
                         command.CommandText = sql;
                         command.Parameters.AddWithValue("@IdShower", sessionData[0].IdShower);
                         command.Parameters.AddWithValue("@Color", sessionData[0].ProfileNumber);
@@ -1326,6 +1328,8 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         da.Fill(ds);
 
+                        moneySaved = ((Convert.ToDecimal(0.25) * Convert.ToDecimal(duration.TotalSeconds))-(Convert.ToDecimal(ds.Tables[0].Rows[0]["WaterCost"])* Convert.ToDecimal(duration.TotalSeconds)));
+                        ecoScore =  waterUsed - ((waterUsed / 100 )* (100 / (55 - averageTemp) * 10));
 
                         bool idUserFound = ((ds.Tables.Count > 0) && (ds.Tables[0].Rows.Count > 0));
                         if (idUserFound)
@@ -1335,7 +1339,7 @@ namespace SmartShowerFunctions // https://smartshowerfunctions.azurewebsites.net
                             command.Parameters.AddWithValue("@IdSession", Guid.NewGuid());
                             command.Parameters.AddWithValue("@IdUser", ds.Tables[0].Rows[0]["IdUser"]);
                             command.Parameters.AddWithValue("@WaterUsed", waterUsed);
-                            command.Parameters.AddWithValue("@MoneySaved", 2.2);
+                            command.Parameters.AddWithValue("@MoneySaved", moneySaved);
                             command.Parameters.AddWithValue("@EcoScore", 9.1);
                             command.Parameters.AddWithValue("@AverageTemp", averageTemp);
                             command.Parameters.AddWithValue("@Duration", duration);
